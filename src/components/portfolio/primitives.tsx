@@ -5,6 +5,11 @@ export function useReveal<T extends HTMLElement>() {
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
+    if (typeof IntersectionObserver === "undefined") {
+      el.querySelectorAll(".reveal").forEach((node) => node.classList.add("is-in"));
+      if (el.classList.contains("reveal")) el.classList.add("is-in");
+      return;
+    }
     const io = new IntersectionObserver(
       (entries) => entries.forEach((e) => e.isIntersecting && (e.target.classList.add("is-in"), io.unobserve(e.target))),
       { threshold: 0.12 },
