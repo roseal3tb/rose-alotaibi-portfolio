@@ -21,6 +21,9 @@ export function Nav() {
     const on = () => setScrolled(window.scrollY > 40);
     on();
     window.addEventListener("scroll", on, { passive: true });
+    if (typeof IntersectionObserver === "undefined") {
+      return () => window.removeEventListener("scroll", on);
+    }
     const io = new IntersectionObserver((es) => es.forEach((e) => e.isIntersecting && setActive(e.target.id)), { rootMargin: "-45% 0px -50% 0px" });
     document.querySelectorAll("main section[id]").forEach((s) => io.observe(s));
     return () => { window.removeEventListener("scroll", on); io.disconnect(); };
