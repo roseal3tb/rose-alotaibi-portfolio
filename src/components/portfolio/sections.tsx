@@ -27,7 +27,7 @@ export function Nav() {
     <header className={`fixed inset-x-0 top-0 z-50 transition-all duration-700 ${scrolled ? "glass border-b py-3" : "py-6"}`}>
       <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 pill pill-solid">Skip to content</a>
       <nav aria-label="Primary" className="mx-auto flex max-w-7xl items-center justify-between px-6 md:px-10">
-        <a href="#top" className="font-display text-2xl italic tracking-tight">Rose<span className="text-orchid">.</span></a>
+        <a href="#top" aria-label="Rose Alotaibi — home" className="inline-flex shrink-0 items-center rounded-full" title="Rose Alotaibi"><img src="/ra-monogram.svg" alt="RA — Rose Alotaibi" className="h-11 w-[68px] object-contain transition-transform duration-300 hover:scale-105 md:h-12 md:w-[76px]" width={76} height={52} /></a>
         <ul className="hidden items-center gap-1 lg:flex">
           {nav.map(([id, label]) => (
             <li key={id}>
