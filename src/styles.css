@@ -152,3 +152,8 @@
   .animate-drift { animation: none; }
   * { transition-duration: 0.01ms !important; }
 }
+
+/* Preserve access to content when JavaScript is disabled. */
+@media (scripting: none) {
+  .reveal, .letter { opacity: 1 !important; transform: none !important; animation: none !important; }
+}
