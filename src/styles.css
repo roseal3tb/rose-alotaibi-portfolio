@@ -157,3 +157,6 @@
 @media (scripting: none) {
   .reveal, .letter { opacity: 1 !important; transform: none !important; animation: none !important; }
 }
+
+/* The two horizontal showcases must never widen the document. Their inner tracks remain scrollable. */
+#projects, #certifications { overflow-x: clip; }
