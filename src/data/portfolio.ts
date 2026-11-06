@@ -4,7 +4,7 @@ import qamat from "@/assets/shot-qamat.jpg";
 import heart from "@/assets/cover-heart.jpg";
 import network from "@/assets/cover-network.webp";
 import murabba from "@/assets/cover-murabba.webp";
-import yusur from "@/assets/cover-yusur.webp";
+import yusur from "@/assets/cover-yusur-green.webp";
 import database from "@/assets/cover-database.jpg";
 
 export const contact = {
