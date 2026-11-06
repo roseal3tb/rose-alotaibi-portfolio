@@ -1,0 +1,47 @@
+name: Browser Prelaunch QA
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  browser-audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: oven-sh/setup-bun@v2
+      - name: Install app dependencies
+        run: bun install --frozen-lockfile
+      - name: Install browser test tools
+        run: npm install --no-save --no-package-lock playwright@1.56.1 axe-core@4.10.3
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Start dev server
+        run: |
+          nohup bun run dev -- --host 127.0.0.1 --port 3000 > /tmp/portfolio-server.log 2>&1 &
+          for attempt in $(seq 1 60); do
+            if curl --silent --fail http://127.0.0.1:3000/ > /dev/null; then exit 0; fi
+            sleep 2
+          done
+          cat /tmp/portfolio-server.log
+          exit 1
+      - name: Browser QA at five viewports
+        run: node scripts/browser-qa.mjs
+      - name: Attach screenshots and report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: portfolio-browser-evidence
+          path: qa-results/
+          retention-days: 7
+          if-no-files-found: warn
+      - name: Print server log on failure
+        if: failure()
+        run: cat /tmp/portfolio-server.log || true

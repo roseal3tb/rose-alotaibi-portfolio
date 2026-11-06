@@ -60,7 +60,7 @@
   --secondary: var(--lavender);
   --secondary-foreground: var(--plum);
   --muted: var(--lavender);
-  --muted-foreground: color-mix(in oklab, var(--plum) 68%, var(--pearl));
+  --muted-foreground: color-mix(in oklab, var(--plum) 85%, var(--pearl));
   --accent: var(--lilac);
   --accent-foreground: var(--plum);
   --destructive: oklch(0.577 0.245 27.325);
@@ -157,3 +157,6 @@
 @media (scripting: none) {
   .reveal, .letter { opacity: 1 !important; transform: none !important; animation: none !important; }
 }
+
+/* The two horizontal showcases must never widen the document. Their inner tracks remain scrollable. */
+#projects, #certifications { overflow-x: clip; }
