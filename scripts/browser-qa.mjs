@@ -40,7 +40,7 @@ async function inspect(width, height, name) {
     document.querySelector("#cert-track").scrollLeft = 0;
     scrollTo(0, 0);
   });
-  await page.waitForTimeout(300);
+  await page.waitForTimeout(1500);
   const basic = await page.evaluate(() => {
     const images = [...document.images];
     const root = document.documentElement;
