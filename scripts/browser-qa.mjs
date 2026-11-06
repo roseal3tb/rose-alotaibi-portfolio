@@ -25,7 +25,22 @@ async function inspect(width, height, name) {
   });
   await page.goto(URL, { waitUntil: "domcontentloaded", timeout: 60000 });
   await page.getByRole("heading", { level: 1 }).waitFor({ timeout: 25000 });
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(600);
+  // Trigger lazy-loaded media and scroll-reveal effects before assessing or capturing a full-page screenshot.
+  for (const image of await page.locator("#project-track img").all()) {
+    await image.scrollIntoViewIfNeeded();
+    await page.waitForTimeout(90);
+  }
+  for (const section of await page.locator("main section[id]").all()) {
+    await section.scrollIntoViewIfNeeded();
+    await page.waitForTimeout(100);
+  }
+  await page.evaluate(() => {
+    document.querySelector("#project-track").scrollLeft = 0;
+    document.querySelector("#cert-track").scrollLeft = 0;
+    scrollTo(0, 0);
+  });
+  await page.waitForTimeout(300);
   const basic = await page.evaluate(() => {
     const images = [...document.images];
     const root = document.documentElement;
@@ -40,6 +55,10 @@ async function inspect(width, height, name) {
       sections: sections.map((x) => x.id),
       images: images.map((img) => ({ alt: img.alt, src: img.currentSrc, loaded: img.complete && img.naturalWidth > 0 })),
       navLinks: [...document.querySelectorAll('nav a[href^="#"]')].map(x=>x.getAttribute("href")),
+      overflowingElements: [...document.querySelectorAll("body *")].map((el) => {
+        const r = el.getBoundingClientRect();
+        return { tag: el.tagName.toLowerCase(), id: el.id, cls: String(el.className).slice(0, 90), left: Math.round(r.left), right: Math.round(r.right), width: Math.round(r.width), scrollWidth: el.scrollWidth, clientWidth: el.clientWidth };
+      }).filter((el) => el.right > innerWidth + 15 && el.left >= -40).sort((a, b) => b.right - a.right).slice(0, 20),
       projectCards: document.querySelectorAll('#project-track article').length,
       certificateCards: document.querySelectorAll('#cert-track article').length,
     };
@@ -60,7 +79,7 @@ async function inspect(width, height, name) {
   check("no horizontal page overflow", basic.overflowPx <= 2);
   check("8 project cards", basic.projectCards === 8);
   check("31 certificate cards", basic.certificateCards === 31);
-  check("no unloaded images", basic.images.every((x) => x.loaded));
+  check("all project images load after being scrolled into view", basic.images.every((x) => x.loaded));
   check("no local HTTP errors", failingResponses.length === 0);
   check("no browser runtime errors", errors.length === 0);
   check("no critical/serious axe violations", ax.every((v) => !["critical", "serious"].includes(v.impact)));
@@ -83,7 +102,7 @@ async function inspect(width, height, name) {
     check("reduced motion preference respected", await page.evaluate(() => matchMedia("(prefers-reduced-motion: reduce)").matches));
   }
   results.push({ name, width, height, basic, axe: ax, assertions, errors, failingResponses });
-  console.log(JSON.stringify({ name, viewport: width, overflowPx: basic.overflowPx, cards: [basic.projectCards,basic.certificateCards], violations: ax, failedAssertions: assertions.filter(v => !v.passed), errors, failingResponses }));
+  console.log(JSON.stringify({ name, viewport: width, overflowPx: basic.overflowPx, overflowingElements: basic.overflowingElements.slice(0, 8), cards: [basic.projectCards,basic.certificateCards], violations: ax, failedAssertions: assertions.filter(v => !v.passed), errors, failingResponses }));
   await context.close();
 }
 try {
