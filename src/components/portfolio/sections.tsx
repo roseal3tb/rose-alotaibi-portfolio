@@ -7,7 +7,9 @@ const nav = [
   ["about", "About"],
   ["experience", "Experience"],
   ["skills", "Skills"],
+  ["highlights", "Highlights"],
   ["certifications", "Certifications"],
+  ["volunteering", "Community"],
   ["contact", "Contact"],
 ] as const;
 
@@ -19,6 +21,9 @@ export function Nav() {
     const on = () => setScrolled(window.scrollY > 40);
     on();
     window.addEventListener("scroll", on, { passive: true });
+    if (typeof IntersectionObserver === "undefined") {
+      return () => window.removeEventListener("scroll", on);
+    }
     const io = new IntersectionObserver((es) => es.forEach((e) => e.isIntersecting && setActive(e.target.id)), { rootMargin: "-45% 0px -50% 0px" });
     document.querySelectorAll("main section[id]").forEach((s) => io.observe(s));
     return () => { window.removeEventListener("scroll", on); io.disconnect(); };
@@ -28,7 +33,7 @@ export function Nav() {
       <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 pill pill-solid">Skip to content</a>
       <nav aria-label="Primary" className="mx-auto flex max-w-7xl items-center justify-between px-6 md:px-10">
         <a href="#top" aria-label="Rose Alotaibi — home" className="inline-flex shrink-0 items-center rounded-full" title="Rose Alotaibi"><img src="/ra-monogram.svg" alt="RA — Rose Alotaibi" className="h-11 w-[68px] object-contain transition-transform duration-300 hover:scale-105 md:h-12 md:w-[76px]" width={76} height={52} /></a>
-        <ul className="hidden items-center gap-1 lg:flex">
+        <ul className="hidden items-center gap-1 xl:flex">
           {nav.map(([id, label]) => (
             <li key={id}>
               <a href={`#${id}`} aria-current={active === id ? "true" : undefined}
@@ -36,13 +41,13 @@ export function Nav() {
             </li>
           ))}
         </ul>
-        <a href={`mailto:${contact.email}`} className="pill pill-solid hidden !py-2.5 lg:inline-flex">Say hello</a>
-        <button type="button" className="pill pill-ghost !px-4 !py-2 lg:hidden" aria-expanded={open} aria-controls="mobile-nav" onClick={() => setOpen((o) => !o)}>
+        <a href={`mailto:${contact.email}`} className="pill pill-solid hidden !py-2.5 xl:inline-flex">Say hello</a>
+        <button type="button" className="pill pill-ghost !px-4 !py-2 xl:hidden" aria-expanded={open} aria-controls="mobile-nav" onClick={() => setOpen((o) => !o)}>
           {open ? "Close" : "Menu"}
         </button>
       </nav>
       {open && (
-        <ul id="mobile-nav" className="glass mx-4 mt-3 grid gap-1 rounded-3xl border p-3 lg:hidden">
+        <ul id="mobile-nav" className="glass mx-4 mt-3 grid gap-1 rounded-3xl border p-3 xl:hidden">
           {nav.map(([id, label]) => (
             <li key={id}><a onClick={() => setOpen(false)} href={`#${id}`} className="block rounded-full px-4 py-3 hover:bg-lavender">{label}</a></li>
           ))}
@@ -179,7 +184,7 @@ export function Experience() {
         {experience.map((o, i) => (
           <li key={o.org} className="reveal group grid gap-4 border-b py-10 transition-colors duration-500 hover:bg-lavender/40 md:grid-cols-12 md:px-4" style={{ transitionDelay: `${i * 60}ms` }}>
             <div className="md:col-span-5">
-              <span className="text-xs text-orchid">{String(i + 1).padStart(2, "0")}</span>
+              <span className="text-xs text-mauve">{String(i + 1).padStart(2, "0")}</span>
               <h3 className="font-display text-3xl transition-transform duration-700 group-hover:translate-x-2 md:text-4xl">{o.org}</h3>
             </div>
             <ul className="grid gap-4 md:col-span-7">
@@ -240,11 +245,11 @@ export function Certifications() {
   const counts = (cat: CertCategory) => certifications.filter((x) => x.category === cat).length;
   return (
     <Section id="certifications" eyebrow="06 — Certifications & Courses" title={<>Always <em className="text-mauve">learning</em></>}
-      intro="Courses, programs and professional certifications. Filter by area of focus.">
+      intro="Courses, workshops, programs and participation highlights. Filter by area of focus.">
       <div className="reveal mb-8 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
         <div role="group" aria-label="Filter certifications by category" className="flex flex-wrap gap-2">
           <button type="button" className="chip" aria-pressed={filter === "All"} onClick={() => setFilter("All")}>All · {certifications.length}</button>
-          {certCategories.map((cat) => (
+          {certCategories.filter((cat) => counts(cat) > 0).map((cat) => (
             <button key={cat} type="button" className="chip" aria-pressed={filter === cat} onClick={() => setFilter(cat)}>{cat} · {counts(cat)}</button>
           ))}
         </div>
@@ -253,8 +258,8 @@ export function Certifications() {
       <p className="sr-only" aria-live="polite">{list.length} items shown</p>
       <div className="mb-6 flex gap-6 text-xs tracking-wider text-muted-foreground">
         <span className="flex items-center gap-2"><span className="h-2 w-2 rounded-full bg-orchid" />Learning course</span>
-        <span className="flex items-center gap-2"><span className="h-2 w-2 rounded-full border border-mauve" />Program</span>
-        <span className="flex items-center gap-2"><span className="h-2 w-2 rounded-full bg-plum" />Professional certification</span>
+        <span className="flex items-center gap-2"><span className="h-2 w-2 rounded-full border border-mauve" />Programs, workshops &amp; participation</span>
+        {certifications.some((entry) => entry.type === "Certification") && <span className="flex items-center gap-2"><span className="h-2 w-2 rounded-full bg-plum" />Professional certification</span>}
       </div>
       <div id="cert-track" ref={c.ref} role="region" aria-label="Certifications carousel" tabIndex={0}
         onKeyDown={(e) => { if (e.key === "ArrowRight") { e.preventDefault(); c.next(); } if (e.key === "ArrowLeft") { e.preventDefault(); c.prev(); } }}
@@ -264,8 +269,8 @@ export function Certifications() {
           <article key={cert.title + cert.issuer} className="flex min-h-[18rem] w-[78%] shrink-0 snap-start flex-col justify-between rounded-[2rem] border bg-card p-8 transition-all duration-500 hover:-translate-y-1 hover:border-orchid hover:shadow-[var(--shadow-soft)] sm:w-[calc(50%-10px)] lg:w-[calc(33.333%-14px)]">
             <div className="flex items-center justify-between">
               <span className="flex items-center gap-2 text-xs tracking-wider text-mauve">
-                <span className={`h-2 w-2 rounded-full ${cert.type === "Course" ? "bg-orchid" : cert.type === "Program" ? "border border-mauve" : "bg-plum"}`} />
-                {cert.type === "Certification" ? "Professional Certification" : cert.type === "Program" ? "Program" : "Learning Course"}
+                <span className={`h-2 w-2 rounded-full ${cert.type === "Course" ? "bg-orchid" : cert.type === "Certification" ? "bg-plum" : "border border-mauve"}`} />
+                {cert.type === "Certification" ? "Professional Certification" : cert.type === "Program" ? "Program" : cert.type === "Workshop" ? "Workshop" : cert.type === "Participation" ? "Participation" : "Learning Course"}
               </span>
               {cert.date && <span className="text-xs text-muted-foreground">{cert.date}</span>}
             </div>

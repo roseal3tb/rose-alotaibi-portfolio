@@ -78,22 +78,42 @@ export const certCategories = [
 export type CertCategory = (typeof certCategories)[number];
 
 /** Add new entries here — the carousel and filters update automatically. */
-export type Cert = { title: string; issuer: string; date?: string; category: CertCategory; type: "Course" | "Certification" | "Program" };
+export type Cert = { title: string; issuer: string; date?: string; category: CertCategory; type: "Course" | "Certification" | "Program" | "Workshop" | "Participation" };
 
+// Faithful English titles of courses, workshops, programs and participations shown in Rose's provided certificate screenshots.
+// A course completion or attendance certificate is NOT necessarily a professional certification.
 export const certifications: Cert[] = [
-  { title: "Azure Cloud Academy", issuer: "Spectrum Networks", category: "Cloud & Infrastructure", type: "Program" },
+  { title: "Azure Cloud Academy", issuer: "Spectrum Networks", date: "Jul 2026", category: "Cloud & Infrastructure", type: "Program" },
   { title: "Cloud Computing Fundamentals", issuer: "IBM", date: "Mar 2026", category: "Cloud & Infrastructure", type: "Course" },
-  { title: "Cloud Computing", issuer: "Misk", date: "Mar 2026", category: "Cloud & Infrastructure", type: "Course" },
-  { title: "Google Cloud Data Platforms & IaaS", issuer: "Tuwaiq Academy", date: "Aug 2025", category: "Cloud & Infrastructure", type: "Course" },
+  { title: "Cloud Computing", issuer: "Misk Skills", date: "Mar 2026", category: "Cloud & Infrastructure", type: "Course" },
+  { title: "Google Cloud Data Platforms & IaaS", issuer: "Tuwaiq Academy", date: "Aug 2025", category: "Cloud & Infrastructure", type: "Workshop" },
   { title: "AI Agents and Agentic AI with Python & Generative AI", issuer: "Coursera", date: "Mar 2026", category: "AI & Machine Learning", type: "Course" },
   { title: "AI Agents and Agentic AI Architecture in Python", issuer: "Coursera", date: "Mar 2026", category: "AI & Machine Learning", type: "Course" },
-  { title: "Introduction to AI", issuer: "IBM", date: "Jul 2026", category: "AI & Machine Learning", type: "Course" },
+  { title: "Introduction to Artificial Intelligence", issuer: "IBM", date: "Jul 2026", category: "AI & Machine Learning", type: "Course" },
   { title: "Foundations in Generative AI", issuer: "IBM", date: "Jul 2026", category: "AI & Machine Learning", type: "Course" },
-  { title: "Microsoft AI Skills", issuer: "Spectrum Networks", date: "Jul 2026", category: "AI & Machine Learning", type: "Program" },
+  { title: "Microsoft AI Skills", issuer: "Spectrum Networks", date: "Jul 2026", category: "AI & Machine Learning", type: "Course" },
   { title: "AI Fundamentals", issuer: "SDAIA", category: "AI & Machine Learning", type: "Course" },
-  { title: "AI Concepts: Advanced Applications", issuer: "SDAIA", category: "AI & Machine Learning", type: "Course" },
+  { title: "AI Concepts and Advanced Applications", issuer: "SDAIA", category: "AI & Machine Learning", type: "Course" },
+  { title: "Machine Learning Applications in E-commerce", issuer: "AI Center of Advanced Studies", date: "Sep 2026", category: "AI & Machine Learning", type: "Course" },
+  { title: "AI for University Students", issuer: "Spectrum Networks", date: "Jul 2026", category: "AI & Machine Learning", type: "Course" },
+  { title: "AI for Educators", issuer: "Spectrum Networks", date: "Jul 2026", category: "AI & Machine Learning", type: "Course" },
+  { title: "AI Accelerator", issuer: "Industrial Engineering Club", date: "May 2026", category: "AI & Machine Learning", type: "Program" },
+  { title: "Artificial Intelligence: Across Sectors and the Real World", issuer: "Arab Open University", date: "Mar 2026", category: "AI & Machine Learning", type: "Workshop" },
+  { title: "How to Build an AI Chatbot Workshop", issuer: "AI Center of Advanced Studies", date: "Nov 2025", category: "AI & Machine Learning", type: "Workshop" },
+  { title: "Artificial Intelligence", issuer: "Misk Skills", date: "Mar 2026", category: "AI & Machine Learning", type: "Course" },
+  { title: "Cybersecurity", issuer: "Misk Skills", date: "Mar 2026", category: "Cybersecurity", type: "Course" },
+  { title: "Windows Fundamentals Workshop", issuer: "Cyberguard Club", date: "May 2026", category: "Cybersecurity", type: "Workshop" },
   { title: "MongoDB for SQL Professionals", issuer: "MongoDB", date: "Nov 2025", category: "Databases & Development", type: "Course" },
-  { title: "Cybersecurity", issuer: "Misk", date: "Mar 2026", category: "Cybersecurity", type: "Course" },
+  { title: "Electronic Circuit Soldering Fundamentals", issuer: "Tuwaiq Academy", date: "Sep 2025", category: "Databases & Development", type: "Workshop" },
+  { title: "Workplace Skills in the Age of Artificial Intelligence", issuer: "Misk Skills", date: "May 2026", category: "Professional Development", type: "Workshop" },
+  { title: "Choosing a Career Path in a Changing Job Market", issuer: "Misk Skills", date: "May 2026", category: "Professional Development", type: "Workshop" },
+  { title: "Improving Workplace Efficiency and Productivity with AI", issuer: "Misk Skills", date: "May 2026", category: "Professional Development", type: "Workshop" },
+  { title: "Beyond AI Community Member", issuer: "AI Center of Advanced Studies", date: "Sep 2026", category: "Programs & Participation", type: "Participation" },
+  { title: "AI ERA NEON Bootcamp", issuer: "Neon Edu", date: "May 2026", category: "Programs & Participation", type: "Participation" },
+  { title: "IBM SkillsBuild Program (IBM and eYouth)", issuer: "IBM", date: "Apr 2026", category: "Programs & Participation", type: "Program" },
+  { title: "Technology Citizenship: Building Technology for the Nation", issuer: "Tuwaiq Academy", date: "Sep 2025", category: "Programs & Participation", type: "Workshop" },
+  { title: "Smart Robotics Camp", issuer: "AI Center of Advanced Studies", date: "Sep 2025", category: "Programs & Participation", type: "Workshop" },
+  { title: "eYouth Learning Plan", issuer: "IBM", date: "Jan 2026", category: "Programs & Participation", type: "Program" },
 ];
 
 export const volunteering = [
