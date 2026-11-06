@@ -2,9 +2,9 @@ import suda from "@/assets/shot-suda.jpg";
 import sukuk from "@/assets/shot-sukuk.jpg";
 import qamat from "@/assets/shot-qamat.jpg";
 import heart from "@/assets/cover-heart.jpg";
-import network from "@/assets/cover-network.jpg";
-import murabba from "@/assets/cover-murabba.jpg";
-import yusur from "@/assets/cover-yusur.jpg";
+import network from "@/assets/cover-network.webp";
+import murabba from "@/assets/cover-murabba.webp";
+import yusur from "@/assets/cover-yusur.webp";
 import database from "@/assets/cover-database.jpg";
 
 export const contact = {
@@ -22,6 +22,7 @@ export type Project = {
   tags: string[];
   url: string;
   image: string;
+  imageFit?: "cover" | "contain";
   kind: "live" | "repo";
 };
 
@@ -30,9 +31,9 @@ export const projects: Project[] = [
   { title: "Sukuk Lab", category: "Program Website", description: "Arabic RTL informational and registration website for the Ethmar Financial Initiative's three-day sukuk learning program.", tags: ["Arabic RTL", "Web", "Registration"], url: "https://sukuk-lab.vercel.app/", image: sukuk, kind: "live" },
   { title: "Qamat", category: "Youth Initiative", description: "Website for the Qamat youth initiative, alongside leadership of its technical committee.", tags: ["Web", "Technical Leadership"], url: "https://www.qamatinitiative.com/", image: qamat, kind: "live" },
   { title: "Heart Failure Prediction", category: "Data Mining · ML", description: "A data mining and machine learning project exploring heart failure prediction.", tags: ["Python", "pandas", "scikit-learn"], url: repo + "Data%20Mining", image: heart, kind: "repo" },
-  { title: "Glam & Ping", category: "Networking", description: "A Java networking project built on a client/server architecture.", tags: ["Java", "Client/Server", "Networking"], url: repo + "Network%20Engineering", image: network, kind: "repo" },
-  { title: "Murabba", category: "Interactive Learning", description: "Interactive educational lessons and quizzes built for the web.", tags: ["HTML", "JavaScript"], url: repo + "Web%20Development%20Engineering", image: murabba, kind: "repo" },
-  { title: "Yusur", category: "UX/UI Concept", description: "A Figma UX/UI concept for pilgrimage services and crowd mapping.", tags: ["Figma", "UX/UI"], url: repo + "UX%20%26%20UI", image: yusur, kind: "repo" },
+  { title: "Glam & Ping", category: "Networking", description: "A Java networking project built on a client/server architecture.", tags: ["Java", "Client/Server", "Networking"], url: repo + "Network%20Engineering", image: network, imageFit: "contain", kind: "repo" },
+  { title: "Murabba", category: "Interactive Learning", description: "Interactive educational lessons and quizzes built for the web.", tags: ["HTML", "JavaScript"], url: repo + "Web%20Development%20Engineering", image: murabba, imageFit: "contain", kind: "repo" },
+  { title: "Yusur", category: "UX/UI Concept", description: "A Figma UX/UI concept for pilgrimage services and crowd mapping.", tags: ["Figma", "UX/UI"], url: repo + "UX%20%26%20UI", image: yusur, imageFit: "contain", kind: "repo" },
   { title: "Tuwaiq Academy Database", category: "Database Coursework", description: "Oracle/SQL database coursework application covering courses, students, grades and attendance.", tags: ["Oracle", "SQL"], url: repo + "Database", image: database, kind: "repo" },
 ];
 
