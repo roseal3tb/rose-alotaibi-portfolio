@@ -124,9 +124,9 @@ export function Projects() {
           <article key={p.title} className="group w-[86%] shrink-0 snap-start md:w-[calc(50%-12px)]">
             <a href={p.url} target="_blank" rel="noopener noreferrer" className="block rounded-[2rem] focus-visible:rounded-[2rem]"
               aria-label={`${p.title} — ${p.kind === "live" ? "visit live site" : "explore related repository"} (opens in new tab)`}>
-              <div className="relative aspect-[16/10] overflow-hidden rounded-[2rem] bg-lavender shadow-[var(--shadow-soft)]">
+              <div className="relative aspect-[16/10] overflow-hidden rounded-[2rem] shadow-[var(--shadow-soft)]">
                 <img src={p.image} alt={`${p.title} ${p.kind === "live" ? "website screenshot" : "project cover"}`} width={1280} height={p.kind === "live" ? 720 : 800}
-                  loading={i < 2 ? "eager" : "lazy"} className="h-full w-full object-contain object-center" />
+                  loading={i < 2 ? "eager" : "lazy"} className="h-full w-full object-cover object-center" />
                 <div className="absolute inset-0 bg-gradient-to-t from-plum/70 via-plum/0 to-transparent opacity-0 transition-opacity duration-700 group-hover:opacity-100" />
                 <span className="glass absolute left-5 top-5 rounded-full px-3 py-1.5 text-xs tracking-wider">{String(i + 1).padStart(2, "0")} · {p.category}</span>
                 <span className="absolute bottom-5 right-5 translate-y-3 rounded-full bg-pearl px-4 py-2 text-sm opacity-0 transition-all duration-700 group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:opacity-100">
