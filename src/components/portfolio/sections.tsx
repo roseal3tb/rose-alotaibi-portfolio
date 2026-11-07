@@ -176,9 +176,23 @@ export function Projects() {
                 </a>
               </div>
               <p className="mt-3 max-w-lg leading-relaxed text-muted-foreground">{p.description}</p>
-              <ul className="mt-4 flex flex-wrap gap-2" aria-label="Technologies">
-                {p.tags.map((t) => <li key={t} className="rounded-full bg-lavender px-3 py-1 text-xs">{t}</li>)}
-              </ul>
+              <div className="mt-5">
+                <p className="text-[0.7rem] font-medium uppercase tracking-[0.16em] text-mauve">Tools &amp; technologies</p>
+                <ul className="mt-2 flex flex-wrap gap-2" aria-label={"Tools used for " + p.title}>
+                  {p.tags.map((t) => <li key={t} className="rounded-full bg-lavender px-3 py-1.5 text-xs">{t}</li>)}
+                </ul>
+              </div>
+              <div className="mt-5 border-t border-lilac/60 pt-4">
+                <p className="text-[0.7rem] font-medium uppercase tracking-[0.16em] text-mauve">Skills practiced &amp; developed</p>
+                <ul className="mt-3 grid gap-x-4 gap-y-2 text-sm leading-snug text-muted-foreground sm:grid-cols-2" aria-label={"Skills explored through " + p.title}>
+                  {p.skillsGained.map((skill) => (
+                    <li key={skill} className="flex items-start gap-2">
+                      <span aria-hidden="true" className="mt-[0.45rem] h-1.5 w-1.5 shrink-0 rounded-full bg-mauve" />
+                      <span>{skill}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
           </article>
         ))}
@@ -210,25 +224,52 @@ export function About() {
 }
 
 export function Experience() {
-  const ref = useReveal<HTMLOListElement>();
   return (
-    <Section id="experience" eyebrow="03 — Experience & Leadership" title={<>Roles &amp; <em className="text-mauve">leadership</em></>}
-      intro="Committees, councils and teams — leading media, marketing and technical work across student and youth organizations.">
-      <ol ref={ref} className="border-t">
-        {experience.map((o, i) => (
-          <li key={o.org} className="reveal group grid gap-4 border-b py-10 transition-colors duration-500 hover:bg-lavender/40 md:grid-cols-12 md:px-4" style={{ transitionDelay: `${i * 60}ms` }}>
-            <div className="md:col-span-5">
-              <span className="text-xs text-mauve">{String(i + 1).padStart(2, "0")}</span>
-              <h3 className="font-display text-3xl transition-transform duration-700 group-hover:translate-x-2 md:text-4xl">{o.org}</h3>
+    <Section
+      id="experience"
+      eyebrow="03 — Experience & Leadership"
+      title={<>What I've <em className="text-mauve">contributed</em></>}
+      intro="The responsibilities behind each role — from leading teams and coordinating initiatives to supporting fellow students and delivering campaigns."
+    >
+      <ol className="grid gap-7 md:gap-9">
+        {experience.map((entry, i) => (
+          <li key={entry.org} className="reveal overflow-hidden rounded-[2rem] border bg-card p-6 sm:p-8 md:p-10" style={{ transitionDelay: (Math.min(i, 3) * 65) + "ms" }}>
+            <div className="grid gap-5 border-b border-lilac/70 pb-7 md:grid-cols-12 md:gap-8">
+              <div className="md:col-span-7">
+                <p className="eyebrow mb-3">{"0" + (i + 1)} · {entry.label}</p>
+                <h3 className="font-display text-[clamp(1.9rem,7vw,2.8rem)] leading-tight">{entry.org}</h3>
+              </div>
+              <p className="max-w-lg text-[0.96rem] leading-relaxed text-muted-foreground md:col-span-5 md:self-end">
+                {entry.introduction}
+              </p>
             </div>
-            <ul className="grid gap-4 md:col-span-7">
-              {o.roles.map((r) => (
-                <li key={r.title + r.dates} className="flex flex-col justify-between gap-1 sm:flex-row sm:items-baseline">
-                  <span className="text-lg">{r.title}</span>
-                  <span className="shrink-0 text-sm tracking-wide text-muted-foreground">{r.dates}</span>
+            <ol className="divide-y divide-lilac/60">
+              {entry.roles.map((role, roleIndex) => (
+                <li key={role.title} className="grid gap-4 py-6 first:pt-7 last:pb-0 md:grid-cols-12 md:gap-8">
+                  <div className="md:col-span-5">
+                    <div className="mb-3 flex items-center gap-3">
+                      <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-lavender text-xs text-mauve">
+                        {String(roleIndex + 1).padStart(2, "0")}
+                      </span>
+                      <span className="text-xs font-medium tracking-wide text-mauve">{role.dates}</span>
+                    </div>
+                    <h4 className="font-display text-[1.65rem] leading-[1.15] sm:text-3xl">{role.title}</h4>
+                    {role.affiliation && <p className="mt-2 text-xs text-muted-foreground">{role.affiliation}</p>}
+                  </div>
+                  <div className="md:col-span-7">
+                    <p className="font-medium leading-relaxed">{role.summary}</p>
+                    <ul className="mt-3 grid gap-2 text-sm leading-relaxed text-muted-foreground">
+                      {role.responsibilities.map((task) => (
+                        <li key={task} className="flex items-start gap-3">
+                          <span aria-hidden="true" className="mt-[0.6rem] h-1.5 w-1.5 shrink-0 rounded-full bg-mauve" />
+                          <span>{task}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 </li>
               ))}
-            </ul>
+            </ol>
           </li>
         ))}
       </ol>
@@ -330,7 +371,8 @@ export function Volunteering() {
           <article key={v.title} className="reveal rounded-[2rem] bg-lavender p-8 transition-transform duration-700 hover:-translate-y-1" style={{ transitionDelay: `${i * 100}ms` }}>
             <p className="text-sm text-mauve">{v.dates}</p>
             <h3 className="mt-8 font-display text-3xl leading-tight">{v.title}</h3>
-            <p className="mt-3 text-muted-foreground">{v.org}</p>
+            <p className="mt-3 text-sm font-medium text-mauve">{v.org}</p>
+            <p className="mt-5 border-t border-plum/10 pt-4 text-sm leading-relaxed text-muted-foreground">{v.description}</p>
           </article>
         ))}
       </div>
