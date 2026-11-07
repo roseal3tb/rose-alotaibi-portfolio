@@ -83,30 +83,68 @@ async function inspect(width, height, name) {
   check("no local HTTP errors", failingResponses.length === 0);
   check("no browser runtime errors", errors.length === 0);
   check("no critical/serious axe violations", ax.every((v) => !["critical", "serious"].includes(v.impact)));
+  const tapTargets = await page.evaluate(() => {
+    const selectors = ["button[aria-controls='mobile-nav']", ".chip", "#project-track a[href]:not(:has(img))", "footer a[href='#top']"];
+    return [...document.querySelectorAll(selectors.join(","))].map((el) => {
+      const r = el.getBoundingClientRect();
+      return { label: el.textContent.trim(), width: Math.round(r.width), height: Math.round(r.height) };
+    });
+  });
+  if (width <= 430) check("essential mobile tap targets at least 44px high", tapTargets.every((t) => t.height >= 44));
+  for (const project of ["Glam & Ping", "Murabba", "Yusur"]) {
+    const fit = await page.locator(`img[alt="${project} project cover"]`).evaluate((img) => getComputedStyle(img).objectFit);
+    check(`preserve full artwork for ${project}`, fit === "contain");
+  }
   const projectTrack = page.locator("#project-track");
   const before = await projectTrack.evaluate(el => el.scrollLeft);
   await page.getByRole("button", { name: "Next project" }).click();
   await page.waitForTimeout(800);
   const after = await projectTrack.evaluate(el => el.scrollLeft);
   check("project carousel right arrow scrolls", after > before);
+  const counter = await page.locator("#projects [aria-live='polite']").textContent();
+  check("project counter follows arrow navigation", counter?.trim().startsWith("02"));
   await page.getByRole("button", { name: /Cybersecurity · 2/ }).click();
   check("certificate filter selects category", await page.locator("#cert-track article").count() === 2);
   check("certificate category aria-pressed", await page.getByRole("button", { name: /Cybersecurity · 2/ }).getAttribute("aria-pressed") === "true");
+  const certFilterButtons = page.locator('[aria-label="Filter certifications by category"] button');
+  check("7 certification filters", await certFilterButtons.count() === 7);
+  for (const label of ["Cloud & Infrastructure", "AI & Machine Learning", "Cybersecurity", "Databases & Development", "Professional Development", "Programs & Participation"]) {
+    const button = certFilterButtons.filter({ hasText: label });
+    const title = (await button.textContent()) || "";
+    const expected = Number(title.split("·").at(-1)?.trim());
+    await button.click();
+    check(`certificate filter ${label} matches count`, await page.locator("#cert-track article").count() === expected);
+    check(`certificate filter ${label} selected state`, await button.getAttribute("aria-pressed") === "true");
+  }
+  await certFilterButtons.first().click();
+  check("All certification filter resets", await page.locator("#cert-track article").count() === 31);
   if (width < 1280) {
-    await page.getByRole("button", { name: "Menu" }).click();
+    await page.getByRole("button", { name: "Open navigation menu" }).click();
     check("mobile navigation opens", await page.locator("#mobile-nav").isVisible());
+    const menu = page.locator("#mobile-nav");
+    check("mobile navigation allows internal scrolling on short screens", await menu.evaluate((el) => {
+      const style = getComputedStyle(el);
+      return el.scrollHeight <= el.clientHeight + 1 || style.overflowY === "auto";
+    }));
+    await page.keyboard.press("Escape");
+    check("Escape closes mobile navigation", await page.locator("#mobile-nav").count() === 0);
+    check("Escape restores focus to menu button", await page.getByRole("button", { name: "Open navigation menu" }).evaluate((el) => document.activeElement === el));
+    await page.getByRole("button", { name: "Open navigation menu" }).click();
     await page.locator('#mobile-nav a[href="#highlights"]').click();
     check("mobile navigation closes on selection", (await page.locator("#mobile-nav").count()) === 0);
+    await page.getByRole("button", { name: "Open navigation menu" }).click();
+    await page.mouse.click(width - 5, height - 5);
+    check("outside tap closes mobile navigation", await page.locator("#mobile-nav").count() === 0);
   }
   if (name === "reduced-motion") {
     check("reduced motion preference respected", await page.evaluate(() => matchMedia("(prefers-reduced-motion: reduce)").matches));
   }
   results.push({ name, width, height, basic, axe: ax, assertions, errors, failingResponses });
-  console.log(JSON.stringify({ name, viewport: width, overflowPx: basic.overflowPx, overflowingElements: basic.overflowingElements.slice(0, 8), cards: [basic.projectCards,basic.certificateCards], violations: ax, failedAssertions: assertions.filter(v => !v.passed), errors, failingResponses }));
+  console.log(JSON.stringify({ name, viewport: width, tapTargets, overflowPx: basic.overflowPx, overflowingElements: basic.overflowingElements.slice(0, 8), cards: [basic.projectCards,basic.certificateCards], violations: ax, failedAssertions: assertions.filter(v => !v.passed), errors, failingResponses }));
   await context.close();
 }
 try {
-  for (const [width,height,name] of [[320,740,"mobile-320"],[390,844,"mobile-390"],[768,1024,"tablet-768"],[1440,900,"desktop-1440"],[390,844,"reduced-motion"]]) {
+  for (const [width,height,name] of [[320,568,"short-mobile-320"],[320,740,"mobile-320"],[360,800,"mobile-360"],[375,667,"mobile-375"],[390,844,"mobile-390"],[430,932,"mobile-430"],[844,390,"landscape-mobile"],[768,1024,"tablet-768"],[1440,900,"desktop-1440"],[390,844,"reduced-motion"]]) {
     await inspect(width,height,name);
   }
 } finally {
