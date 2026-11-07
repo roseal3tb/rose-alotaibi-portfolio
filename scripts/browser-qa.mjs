@@ -127,6 +127,9 @@ async function inspect(width, height, name) {
     await page.getByRole("button", { name: "Open navigation menu" }).click();
     check("mobile navigation opens", await page.locator("#mobile-nav").isVisible());
     check("mobile menu contains all eight destinations", await page.locator("#mobile-nav a[href^='#']").count() === 8);
+    if (name === "mobile-390" || name === "short-mobile-320") {
+      await page.screenshot({ path: output + "/" + name + "-menu.png", animations: "disabled" });
+    }
     check("opening menu locks background scrolling", await page.evaluate(() => document.body.style.overflow === "hidden"));
     await page.keyboard.press("Tab");
     check("menu keyboard focus stays within controls", await page.evaluate(() => document.activeElement?.closest("#mobile-nav") !== null || document.activeElement?.getAttribute("aria-controls") === "mobile-nav"));
