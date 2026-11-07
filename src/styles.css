@@ -139,6 +139,12 @@
   background: linear-gradient(90deg, transparent, var(--lilac), transparent);
 }
 
+.premium-menu-panel { animation: menu-enter 0.45s var(--ease-lux) both; }
+@keyframes menu-enter {
+  from { opacity: 0; transform: translateY(-10px) scale(0.985); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
 .reveal { opacity: 0; transform: translateY(28px); transition: opacity 1s var(--ease-lux), transform 1s var(--ease-lux); }
 .reveal.is-in { opacity: 1; transform: none; }
 
@@ -152,7 +158,7 @@
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .reveal, .letter { opacity: 1 !important; transform: none !important; animation: none !important; transition: none !important; }
-  .animate-drift { animation: none; }
+  .animate-drift, .premium-menu-panel { animation: none; }
   * { transition-duration: 0.01ms !important; }
 }
 
