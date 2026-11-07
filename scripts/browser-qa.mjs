@@ -144,7 +144,8 @@ async function inspect(width, height, name) {
     await page.locator('#mobile-nav a[href="#highlights"]').click();
     check("mobile navigation closes on selection", (await page.locator("#mobile-nav").count()) === 0);
     await page.getByRole("button", { name: "Open navigation menu" }).click();
-    await page.mouse.click(width - 5, height - 5);
+    // Test the actual outside backdrop, not the browser's right-edge scrollbar.
+    await page.mouse.click(5, Math.max(85, height - 20));
     check("outside tap closes mobile navigation", await page.locator("#mobile-nav").count() === 0);
   }
   if (name === "reduced-motion") {
