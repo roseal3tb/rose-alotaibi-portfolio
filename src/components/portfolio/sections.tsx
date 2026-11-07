@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { Arrow, Arrows, Magnetic, Section, useCarousel, useParallax, useReveal } from "./primitives";
 import { certCategories, certifications, contact, experience, highlights, projects, skills, volunteering, type CertCategory } from "@/data/portfolio";
 
@@ -62,7 +62,7 @@ export function Nav() {
   }, [open]);
 
   return (
-    <header className={"fixed inset-x-0 top-0 z-50 transition-[background-color,border-color,padding] duration-500 " + (open ? "border-b border-lilac/50 bg-pearl py-3" : scrolled ? "glass border-b py-3" : "py-4 md:py-6")}>
+    <header className={"fixed inset-x-0 top-0 z-50 transition-[background-color,border-color,padding] duration-500 " + (open ? "border-b border-lilac/45 bg-lavender/50 py-3 backdrop-blur-xl" : scrolled ? "glass border-b py-3" : "py-4 md:py-6")}>
       <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 pill pill-solid">Skip to content</a>
       <nav aria-label="Primary" className="relative z-50 mx-auto flex max-w-7xl items-center justify-between px-6 md:px-10">
         <a href="#top" aria-label="Rose Alotaibi — home" className="inline-flex shrink-0 items-center rounded-full" title="Rose Alotaibi">
@@ -88,12 +88,12 @@ export function Nav() {
         </button>
       </nav>
       <nav ref={menuRef} id="mobile-nav" aria-label="Mobile" aria-hidden={!open} data-open={open}
-        className="compact-nav-panel absolute inset-x-4 top-full z-40 mx-auto mt-2 max-h-[calc(100dvh-6rem)] max-w-[28rem] overflow-y-auto overscroll-contain rounded-[1.6rem] border border-lilac/70 bg-pearl shadow-[0_20px_55px_-25px_rgba(61,41,78,0.3)] xl:hidden">
+        className="compact-nav-panel absolute inset-x-4 top-full z-40 mx-auto mt-2 max-h-[calc(100dvh-6rem)] max-w-[28rem] overflow-y-auto overscroll-contain rounded-[1.6rem] xl:hidden">
         <ul className="grid gap-1 p-3">
-          {nav.map(([id, label]) => (
-            <li key={id}>
+          {nav.map(([id, label], index) => (
+            <li key={id} style={{ "--item-index": index } as CSSProperties}>
               <a href={"#" + id} onClick={() => setOpen(false)} tabIndex={open ? 0 : -1} aria-current={active === id ? "location" : undefined}
-                className={"flex min-h-11 items-center justify-between rounded-2xl px-4 py-2.5 text-[0.95rem] font-medium tracking-[0.02em] transition-[background-color,color] duration-200 hover:bg-lavender focus-visible:bg-lavender " + (active === id ? "bg-lavender/75 text-mauve" : "text-plum")}>
+                className={"flex min-h-11 items-center justify-between rounded-2xl px-4 py-2.5 text-[0.95rem] font-medium tracking-[0.02em] transition-[background-color,color] duration-200 hover:bg-white/50 focus-visible:bg-white/60 " + (active === id ? "bg-white/45 text-mauve" : "text-plum")}>
                 <span>{label}</span>
                 {active === id && <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-mauve" />}
               </a>
