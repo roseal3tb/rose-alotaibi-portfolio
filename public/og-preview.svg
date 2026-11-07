@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="Rose Alotaibi portfolio — Where technology meets creativity">
+<defs>
+<linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#faf8ff"/><stop offset="1" stop-color="#eee5ff"/></linearGradient>
+<radialGradient id="glow"><stop stop-color="#d4b8ee" stop-opacity=".64"/><stop offset="1" stop-color="#d4b8ee" stop-opacity="0"/></radialGradient>
+</defs>
+<rect width="1200" height="630" fill="url(#bg)"/>
+<circle cx="1060" cy="42" r="350" fill="url(#glow)"/>
+<circle cx="28" cy="630" r="230" fill="url(#glow)"/>
+<g fill="#3d294e">
+<text x="78" y="92" font-family="Georgia,serif" font-size="45" letter-spacing="-9">RA</text>
+<text x="78" y="188" font-family="Arial,sans-serif" font-size="18" letter-spacing="5">PORTFOLIO · RIYADH · 2026</text>
+<text x="75" y="343" font-family="Georgia,serif" font-size="128" letter-spacing="-5">Rose</text>
+</g>
+<text x="132" y="465" fill="#8054a4" font-family="Georgia,serif" font-size="127" font-style="italic" letter-spacing="-6">Alotaibi</text>
+<text x="81" y="552" fill="#3d294e" font-family="Georgia,serif" font-size="35" font-style="italic">Where technology meets creativity.</text>
+</svg>
