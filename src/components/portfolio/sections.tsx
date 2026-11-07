@@ -87,12 +87,12 @@ export function Nav() {
           </span>
         </button>
       </nav>
-      <nav ref={menuRef} id="mobile-nav" aria-label="Mobile" aria-hidden={!open} inert={!open} data-open={open}
+      <nav ref={menuRef} id="mobile-nav" aria-label="Mobile" aria-hidden={!open} data-open={open}
         className="compact-nav-panel absolute inset-x-4 top-full z-40 mx-auto mt-2 max-h-[calc(100dvh-6rem)] max-w-[28rem] overflow-y-auto overscroll-contain rounded-[1.6rem] border border-lilac/70 bg-pearl shadow-[0_20px_55px_-25px_rgba(61,41,78,0.3)] xl:hidden">
         <ul className="grid gap-1 p-3">
           {nav.map(([id, label]) => (
             <li key={id}>
-              <a href={"#" + id} onClick={() => setOpen(false)} aria-current={active === id ? "location" : undefined}
+              <a href={"#" + id} onClick={() => setOpen(false)} tabIndex={open ? 0 : -1} aria-current={active === id ? "location" : undefined}
                 className={"flex min-h-11 items-center justify-between rounded-2xl px-4 py-2.5 text-[0.95rem] font-medium tracking-[0.02em] transition-[background-color,color] duration-200 hover:bg-lavender focus-visible:bg-lavender " + (active === id ? "bg-lavender/75 text-mauve" : "text-plum")}>
                 <span>{label}</span>
                 {active === id && <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-mauve" />}
