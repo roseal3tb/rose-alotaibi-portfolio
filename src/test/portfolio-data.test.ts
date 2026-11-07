@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { certCategories, certifications, contact, highlights, projects } from "@/data/portfolio";
+import { certCategories, certifications, contact, experience, highlights, projects, volunteering } from "@/data/portfolio";
 
 describe("Portfolio content integrity", () => {
   it("keeps eight uniquely named projects with usable external destinations", () => {
@@ -9,6 +9,8 @@ describe("Portfolio content integrity", () => {
       expect(project.title.length).toBeGreaterThan(2);
       expect(project.description.length).toBeGreaterThan(20);
       expect(project.tags.length).toBeGreaterThan(0);
+      expect(project.skillsGained.length).toBeGreaterThanOrEqual(3);
+      expect(new Set(project.skillsGained).size).toBe(project.skillsGained.length);
       expect(new URL(project.url).protocol).toBe("https:");
     }
   });
@@ -30,6 +32,25 @@ describe("Portfolio content integrity", () => {
       expect(["Course", "Certification", "Program", "Workshop", "Participation"]).toContain(cert.type);
       expect(cert.issuer.trim()).not.toBe("");
     }
+  });
+
+  it("provides useful responsibilities for every leadership, mentorship, and internship role", () => {
+    expect(experience).toHaveLength(5);
+    for (const entry of experience) {
+      expect(entry.introduction.length).toBeGreaterThan(20);
+      for (const role of entry.roles) {
+        expect(role.summary.length).toBeGreaterThan(20);
+        expect(role.responsibilities.length).toBeGreaterThanOrEqual(2);
+        expect(role.responsibilities.every((task) => task.length > 25)).toBe(true);
+      }
+    }
+    const campus = experience.find((entry) => entry.org.includes("Student Leadership"));
+    expect(campus?.roles.some((role) => role.title.includes("Big Sibling"))).toBe(true);
+    expect(campus?.roles.some((role) => role.title.includes("Student Council"))).toBe(true);
+    const nugttah = experience.find((entry) => entry.org === "NUGTTAH");
+    expect(nugttah?.roles[0].title).toBe("Marketing & Technical Intern");
+    expect(nugttah?.roles[0].responsibilities.some((task) => task.includes("content creators"))).toBe(true);
+    expect(volunteering.every((item) => item.description.length > 25)).toBe(true);
   });
 
   it("keeps contact details usable without public phone numbers", () => {

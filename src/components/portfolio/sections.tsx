@@ -3,81 +3,140 @@ import { Arrow, Arrows, Magnetic, Section, useCarousel, useParallax, useReveal }
 import { certCategories, certifications, contact, experience, highlights, projects, skills, volunteering, type CertCategory } from "@/data/portfolio";
 
 const nav = [
-  ["projects", "Projects"],
-  ["about", "About"],
-  ["experience", "Experience"],
-  ["skills", "Skills"],
-  ["highlights", "Highlights"],
-  ["certifications", "Certifications"],
-  ["volunteering", "Community"],
-  ["contact", "Contact"],
+  ["projects", "Projects", "Selected work & technical builds"],
+  ["about", "About", "Background & education"],
+  ["experience", "Experience", "Leadership, mentoring & internship"],
+  ["skills", "Skills", "My tools & capabilities"],
+  ["highlights", "Highlights", "Hackathons & milestones"],
+  ["certifications", "Certifications", "Courses & learning"],
+  ["volunteering", "Community", "Giving back"],
+  ["contact", "Contact", "Let's connect"],
 ] as const;
 
 export function Nav() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState("");
-  const headerRef = useRef<HTMLElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLElement>(null);
+
   useEffect(() => {
-    const on = () => setScrolled(window.scrollY > 40);
-    on();
-    window.addEventListener("scroll", on, { passive: true });
-    if (typeof IntersectionObserver === "undefined") {
-      return () => window.removeEventListener("scroll", on);
-    }
-    const io = new IntersectionObserver((es) => es.forEach((e) => e.isIntersecting && setActive(e.target.id)), { rootMargin: "-45% 0px -50% 0px" });
-    document.querySelectorAll("main section[id]").forEach((s) => io.observe(s));
-    return () => { window.removeEventListener("scroll", on); io.disconnect(); };
+    const onScroll = () => setScrolled(window.scrollY > 40);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    const observer = typeof IntersectionObserver === "undefined" ? null : new IntersectionObserver(
+      (entries) => entries.forEach((entry) => entry.isIntersecting && setActive(entry.target.id)),
+      { rootMargin: "-45% 0px -50% 0px" }
+    );
+    document.querySelectorAll("main section[id]").forEach((section) => observer?.observe(section));
+    return () => { window.removeEventListener("scroll", onScroll); observer?.disconnect(); };
   }, []);
+
   useEffect(() => {
     if (!open) return;
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const frame = requestAnimationFrame(() => menuRef.current?.querySelector<HTMLAnchorElement>("a[href]")?.focus());
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
+        event.preventDefault();
         setOpen(false);
         menuButtonRef.current?.focus();
+      } else if (event.key === "Tab") {
+        const elements = [menuButtonRef.current, ...Array.from(menuRef.current?.querySelectorAll<HTMLElement>("a[href]") ?? [])].filter(
+          (element): element is HTMLElement => Boolean(element)
+        );
+        const index = elements.indexOf(document.activeElement as HTMLElement);
+        if (event.shiftKey && index <= 0) {
+          event.preventDefault();
+          elements[elements.length - 1]?.focus();
+        } else if (!event.shiftKey && index === elements.length - 1) {
+          event.preventDefault();
+          elements[0]?.focus();
+        }
       }
     };
     const onPointerDown = (event: PointerEvent) => {
-      if (!headerRef.current?.contains(event.target as Node)) setOpen(false);
+      const target = event.target as Node;
+      if (!menuRef.current?.contains(target) && !menuButtonRef.current?.contains(target)) {
+        setOpen(false);
+      }
     };
     const onHashChange = () => setOpen(false);
+    const onResize = () => { if (innerWidth >= 1280) setOpen(false); };
     document.addEventListener("keydown", onKeyDown);
-    document.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("pointerdown", onPointerDown, true);
     window.addEventListener("hashchange", onHashChange);
+    window.addEventListener("resize", onResize);
     return () => {
+      cancelAnimationFrame(frame);
+      document.body.style.overflow = originalOverflow;
       document.removeEventListener("keydown", onKeyDown);
-      document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("pointerdown", onPointerDown, true);
       window.removeEventListener("hashchange", onHashChange);
+      window.removeEventListener("resize", onResize);
     };
   }, [open]);
 
   return (
-    <header ref={headerRef} className={`fixed inset-x-0 top-0 z-50 transition-all duration-700 ${scrolled ? "glass border-b py-3" : "py-4 md:py-6"}`}>
+    <header className={"fixed inset-x-0 top-0 z-50 transition-all duration-500 " + (open ? "border-b bg-pearl/95 py-3" : scrolled ? "glass border-b py-3" : "py-4 md:py-6")}>
       <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 pill pill-solid">Skip to content</a>
-      <nav aria-label="Primary" className="mx-auto flex max-w-7xl items-center justify-between px-6 md:px-10">
-        <a href="#top" aria-label="Rose Alotaibi — home" className="inline-flex shrink-0 items-center rounded-full" title="Rose Alotaibi"><img src="/ra-monogram.svg" alt="RA — Rose Alotaibi" className="h-11 w-[68px] object-contain transition-transform duration-300 hover:scale-105 md:h-12 md:w-[76px]" width={76} height={52} /></a>
+      <nav aria-label="Primary" className="relative z-50 mx-auto flex max-w-7xl items-center justify-between px-6 md:px-10">
+        <a href="#top" aria-label="Rose Alotaibi — home" className="inline-flex shrink-0 items-center rounded-full" title="Rose Alotaibi">
+          <img src="/ra-monogram.svg" alt="RA — Rose Alotaibi" className="h-11 w-[68px] object-contain transition-transform duration-300 hover:scale-105 md:h-12 md:w-[76px]" width={76} height={52} />
+        </a>
         <ul className="hidden items-center gap-1 xl:flex">
           {nav.map(([id, label]) => (
             <li key={id}>
-              <a href={`#${id}`} aria-current={active === id ? "true" : undefined}
-                className={`rounded-full px-4 py-2 text-sm transition-colors duration-300 hover:text-mauve ${active === id ? "bg-lavender text-mauve" : ""}`}>{label}</a>
+              <a href={"#" + id} aria-current={active === id ? "location" : undefined}
+                className={"rounded-full px-4 py-2 text-sm transition-colors duration-300 hover:text-mauve " + (active === id ? "bg-lavender text-mauve" : "")}>{label}</a>
             </li>
           ))}
         </ul>
-        <a href={`mailto:${contact.email}`} className="pill pill-solid hidden !py-2.5 xl:inline-flex">Say hello</a>
-        <button ref={menuButtonRef} type="button" className="pill pill-ghost !min-h-11 !px-5 !py-2 xl:hidden" aria-label={open ? "Close navigation menu" : "Open navigation menu"} aria-expanded={open} aria-controls="mobile-nav" onClick={() => setOpen((o) => !o)}>
-          {open ? "Close" : "Menu"}
+        <a href={"mailto:" + contact.email} className="pill pill-solid hidden !py-2.5 xl:inline-flex">Say hello</a>
+        <button ref={menuButtonRef} type="button" className="group inline-flex min-h-11 items-center gap-3 rounded-full border border-lilac bg-pearl/90 px-4 py-2 text-sm shadow-sm transition-colors duration-300 hover:border-mauve hover:bg-lavender xl:hidden"
+          aria-label={open ? "Close navigation menu" : "Open navigation menu"} aria-expanded={open} aria-controls="mobile-nav" onClick={() => setOpen((value) => !value)}>
+          <span className="font-medium tracking-[0.08em]">{open ? "Close" : "Explore"}</span>
+          <span aria-hidden="true" className="flex h-5 w-5 flex-col items-center justify-center gap-1">
+            <span className={"block h-[1.5px] w-[18px] rounded bg-plum transition-transform duration-300 " + (open ? "translate-y-[2.75px] rotate-45" : "")} />
+            <span className={"block h-[1.5px] w-[18px] rounded bg-plum transition-transform duration-300 " + (open ? "-translate-y-[2.75px] -rotate-45" : "")} />
+          </span>
         </button>
       </nav>
       {open && (
-        <nav aria-label="Mobile" className="xl:hidden">
-          <ul id="mobile-nav" className="glass mx-4 mt-3 grid max-h-[calc(100dvh-6.5rem)] gap-1 overflow-y-auto overscroll-contain rounded-3xl border p-3 shadow-[var(--shadow-soft)]">
-            {nav.map(([id, label]) => (
-              <li key={id}><a onClick={() => setOpen(false)} href={`#${id}`} aria-current={active === id ? "location" : undefined} className="block min-h-11 rounded-full px-4 py-3 hover:bg-lavender focus-visible:bg-lavender">{label}</a></li>
-            ))}
-          </ul>
-        </nav>
+        <div className="fixed inset-x-0 bottom-0 top-[68px] z-40 xl:hidden">
+          <button type="button" tabIndex={-1} className="absolute inset-0 w-full cursor-default bg-plum/30 backdrop-blur-[6px]" aria-label="Dismiss navigation" onClick={() => setOpen(false)} />
+          <nav ref={menuRef} id="mobile-nav" aria-label="Mobile" className="premium-menu-panel no-scrollbar absolute inset-x-3 top-3 mx-auto max-h-[calc(100dvh-88px)] max-w-3xl overflow-y-auto overscroll-contain rounded-[2rem] border border-lilac/60 bg-pearl shadow-[0_30px_90px_-25px_rgba(61,41,78,0.4)] sm:inset-x-6">
+            <div className="relative overflow-hidden rounded-t-[2rem] bg-gradient-to-br from-lavender via-pearl to-lilac/40 px-6 pb-5 pt-6 sm:px-8">
+              <div aria-hidden="true" className="absolute -right-10 -top-24 h-64 w-64 rounded-full bg-orchid/20 blur-3xl" />
+              <div className="relative flex items-center justify-between gap-4">
+                <p className="text-[0.7rem] font-medium uppercase tracking-[0.24em] text-mauve">The portfolio / 2026</p>
+                <span className="rounded-full border border-lilac bg-pearl/60 px-3 py-1 text-[0.68rem] uppercase tracking-[0.14em] text-mauve">Navigation</span>
+              </div>
+              <h2 className="relative mt-3 font-display text-[clamp(2.1rem,8vw,3.2rem)] font-light leading-none">Find your way <em className="text-mauve">around.</em></h2>
+              <p className="relative mt-3 text-sm text-muted-foreground">Explore what I build, lead, and learn.</p>
+            </div>
+            <ol className="grid gap-1 p-3 sm:grid-cols-2 sm:p-4">
+              {nav.map(([id, label, description], index) => (
+                <li key={id}>
+                  <a href={"#" + id} onClick={() => setOpen(false)} aria-current={active === id ? "location" : undefined}
+                    className={"group flex min-h-[62px] items-center gap-3 rounded-2xl border px-4 py-2.5 transition-[background-color,border-color,transform] duration-300 hover:translate-x-1 hover:border-lilac hover:bg-lavender/70 focus-visible:border-mauve focus-visible:bg-lavender " + (active === id ? "border-lilac bg-lavender/65" : "border-transparent")}>
+                    <span className="self-start pt-1 text-[0.7rem] font-medium text-mauve">{String(index + 1).padStart(2, "0")}</span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block font-display text-[1.65rem] leading-none">{label}</span>
+                      <span className="mt-1 block text-[0.72rem] leading-snug text-muted-foreground">{description}</span>
+                    </span>
+                    <span aria-hidden="true" className="text-xl text-mauve transition-transform duration-300 group-hover:translate-x-1">↗</span>
+                  </a>
+                </li>
+              ))}
+            </ol>
+            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-lilac/60 px-6 py-4 sm:px-8">
+              <p className="font-display text-xl italic">Let's create something.</p>
+              <a href={"mailto:" + contact.email} onClick={() => setOpen(false)} className="pill pill-solid !py-2.5">Say hello <Arrow dir="up-right" /></a>
+            </div>
+          </nav>
+        </div>
       )}
     </header>
   );
@@ -176,9 +235,23 @@ export function Projects() {
                 </a>
               </div>
               <p className="mt-3 max-w-lg leading-relaxed text-muted-foreground">{p.description}</p>
-              <ul className="mt-4 flex flex-wrap gap-2" aria-label="Technologies">
-                {p.tags.map((t) => <li key={t} className="rounded-full bg-lavender px-3 py-1 text-xs">{t}</li>)}
-              </ul>
+              <div className="mt-5">
+                <p className="text-[0.7rem] font-medium uppercase tracking-[0.16em] text-mauve">Tools &amp; technologies</p>
+                <ul className="mt-2 flex flex-wrap gap-2" aria-label={"Tools used for " + p.title}>
+                  {p.tags.map((t) => <li key={t} className="rounded-full bg-lavender px-3 py-1.5 text-xs">{t}</li>)}
+                </ul>
+              </div>
+              <div className="mt-5 border-t border-lilac/60 pt-4">
+                <p className="text-[0.7rem] font-medium uppercase tracking-[0.16em] text-mauve">Skills practiced &amp; developed</p>
+                <ul className="mt-3 grid gap-x-4 gap-y-2 text-sm leading-snug text-muted-foreground sm:grid-cols-2" aria-label={"Skills explored through " + p.title}>
+                  {p.skillsGained.map((skill) => (
+                    <li key={skill} className="flex items-start gap-2">
+                      <span aria-hidden="true" className="mt-[0.45rem] h-1.5 w-1.5 shrink-0 rounded-full bg-mauve" />
+                      <span>{skill}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
           </article>
         ))}
@@ -210,25 +283,52 @@ export function About() {
 }
 
 export function Experience() {
-  const ref = useReveal<HTMLOListElement>();
   return (
-    <Section id="experience" eyebrow="03 — Experience & Leadership" title={<>Roles &amp; <em className="text-mauve">leadership</em></>}
-      intro="Committees, councils and teams — leading media, marketing and technical work across student and youth organizations.">
-      <ol ref={ref} className="border-t">
-        {experience.map((o, i) => (
-          <li key={o.org} className="reveal group grid gap-4 border-b py-10 transition-colors duration-500 hover:bg-lavender/40 md:grid-cols-12 md:px-4" style={{ transitionDelay: `${i * 60}ms` }}>
-            <div className="md:col-span-5">
-              <span className="text-xs text-mauve">{String(i + 1).padStart(2, "0")}</span>
-              <h3 className="font-display text-3xl transition-transform duration-700 group-hover:translate-x-2 md:text-4xl">{o.org}</h3>
+    <Section
+      id="experience"
+      eyebrow="03 — Experience & Leadership"
+      title={<>What I've <em className="text-mauve">contributed</em></>}
+      intro="The responsibilities behind each role — from leading teams and coordinating initiatives to supporting fellow students and delivering campaigns."
+    >
+      <ol className="grid gap-7 md:gap-9">
+        {experience.map((entry, i) => (
+          <li key={entry.org} className="reveal overflow-hidden rounded-[2rem] border bg-card p-6 sm:p-8 md:p-10" style={{ transitionDelay: (Math.min(i, 3) * 65) + "ms" }}>
+            <div className="grid gap-5 border-b border-lilac/70 pb-7 md:grid-cols-12 md:gap-8">
+              <div className="md:col-span-7">
+                <p className="eyebrow mb-3">{"0" + (i + 1)} · {entry.label}</p>
+                <h3 className="font-display text-[clamp(1.9rem,7vw,2.8rem)] leading-tight">{entry.org}</h3>
+              </div>
+              <p className="max-w-lg text-[0.96rem] leading-relaxed text-muted-foreground md:col-span-5 md:self-end">
+                {entry.introduction}
+              </p>
             </div>
-            <ul className="grid gap-4 md:col-span-7">
-              {o.roles.map((r) => (
-                <li key={r.title + r.dates} className="flex flex-col justify-between gap-1 sm:flex-row sm:items-baseline">
-                  <span className="text-lg">{r.title}</span>
-                  <span className="shrink-0 text-sm tracking-wide text-muted-foreground">{r.dates}</span>
+            <ol className="divide-y divide-lilac/60">
+              {entry.roles.map((role, roleIndex) => (
+                <li key={role.title} className="grid gap-4 py-6 first:pt-7 last:pb-0 md:grid-cols-12 md:gap-8">
+                  <div className="md:col-span-5">
+                    <div className="mb-3 flex items-center gap-3">
+                      <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-lavender text-xs text-mauve">
+                        {String(roleIndex + 1).padStart(2, "0")}
+                      </span>
+                      <span className="text-xs font-medium tracking-wide text-mauve">{role.dates}</span>
+                    </div>
+                    <h4 className="font-display text-[1.65rem] leading-[1.15] sm:text-3xl">{role.title}</h4>
+                    {role.affiliation && <p className="mt-2 text-xs text-muted-foreground">{role.affiliation}</p>}
+                  </div>
+                  <div className="md:col-span-7">
+                    <p className="font-medium leading-relaxed">{role.summary}</p>
+                    <ul className="mt-3 grid gap-2 text-sm leading-relaxed text-muted-foreground">
+                      {role.responsibilities.map((task) => (
+                        <li key={task} className="flex items-start gap-3">
+                          <span aria-hidden="true" className="mt-[0.6rem] h-1.5 w-1.5 shrink-0 rounded-full bg-mauve" />
+                          <span>{task}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 </li>
               ))}
-            </ul>
+            </ol>
           </li>
         ))}
       </ol>
@@ -330,7 +430,8 @@ export function Volunteering() {
           <article key={v.title} className="reveal rounded-[2rem] bg-lavender p-8 transition-transform duration-700 hover:-translate-y-1" style={{ transitionDelay: `${i * 100}ms` }}>
             <p className="text-sm text-mauve">{v.dates}</p>
             <h3 className="mt-8 font-display text-3xl leading-tight">{v.title}</h3>
-            <p className="mt-3 text-muted-foreground">{v.org}</p>
+            <p className="mt-3 text-sm font-medium text-mauve">{v.org}</p>
+            <p className="mt-5 border-t border-plum/10 pt-4 text-sm leading-relaxed text-muted-foreground">{v.description}</p>
           </article>
         ))}
       </div>
