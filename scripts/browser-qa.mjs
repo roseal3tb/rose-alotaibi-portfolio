@@ -126,16 +126,40 @@ async function inspect(width, height, name) {
   if (width < 1280) {
     const menu = page.locator("#mobile-nav");
     check("closed dropdown remains mounted for exit animation", await menu.count() === 1);
+    const menuStyle = await menu.evaluate((element) => {
+      const css = getComputedStyle(element);
+      return {
+        transform: css.transform,
+        transformOrigin: css.transformOrigin,
+        gradient: css.backgroundImage,
+        blur: css.backdropFilter || css.webkitBackdropFilter || "",
+      };
+    });
+    check("menu has tinted glass gradient", menuStyle.gradient.includes("linear-gradient"));
+    check("menu has genuine frosted-glass blur", menuStyle.blur.includes("blur("));
+    if (name !== "reduced-motion") {
+      check("menu begins with a left-hinged 3D fold",
+        menuStyle.transform.startsWith("matrix3d(") && menuStyle.transformOrigin.startsWith("0px"));
+    }
     check("closed menu is inert and hidden", await menu.getAttribute("aria-hidden") === "true" && !(await menu.isVisible()));
     await page.getByRole("button", { name: "Open navigation menu" }).click();
     await menu.waitFor({ state: "visible", timeout: 3000 });
     check("mobile navigation opens", await menu.isVisible());
     check("mobile menu contains all eight destinations", await menu.locator("a[href^='#']").count() === 8);
     check("compact menu has no oversized marketing header", await menu.getByText("Find your way around.").count() === 0);
-    check("menu is a lightweight dropdown, not a full-screen panel", await menu.evaluate((el) => el.getBoundingClientRect().width <= 460 && el.getBoundingClientRect().height < innerHeight));
+    check("menu is a lightweight dropdown, not a full-screen panel", await menu.evaluate((el) =>
+      el.offsetWidth <= 460 && el.offsetHeight < innerHeight &&
+      el.offsetHeight <= Math.min(440, innerHeight - 96)
+    ));
     check("menu opens without locking page scroll", await page.evaluate(() => document.body.style.overflow !== "hidden"));
     check("menu opening animation is configured", await menu.evaluate((el) => getComputedStyle(el).transitionDuration.split(",").some((duration) => parseFloat(duration) > 0.1)) || name === "reduced-motion");
-    if (name === "mobile-390" || name === "short-mobile-320") {
+    if (name !== "reduced-motion") {
+      const delays = await menu.locator("li").evaluateAll((list) =>
+        list.map((el) => parseFloat(getComputedStyle(el).transitionDelay))
+      );
+      check("menu links reveal sequentially", delays.length === 8 && delays[7] > delays[0]);
+    }
+    if (name === "mobile-390" || name === "short-mobile-320" || name === "landscape-mobile") {
       await page.screenshot({ path: output + "/" + name + "-menu.png", animations: "disabled" });
     }
     // Tab behavior is verified on standard mobile viewports. Reduced-motion
@@ -153,6 +177,11 @@ async function inspect(width, height, name) {
     check("close begins transition while menu stays mounted", await menu.count() === 1 && await menu.getAttribute("data-open") === "false");
     await menu.waitFor({ state: "hidden", timeout: 3000 });
     check("Escape closes navigation visually", !(await menu.isVisible()));
+    if (name !== "reduced-motion") {
+      check("exit animation returns menu to the left hinge", await menu.evaluate((el) =>
+        getComputedStyle(el).transform.startsWith("matrix3d(")
+      ));
+    }
     check("Escape restores focus to Explore button", await page.getByRole("button", { name: "Open navigation menu" }).evaluate((el) => document.activeElement === el));
     await page.getByRole("button", { name: "Open navigation menu" }).click();
     await menu.waitFor({ state: "visible", timeout: 3000 });
