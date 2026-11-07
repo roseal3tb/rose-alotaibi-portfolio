@@ -124,32 +124,41 @@ async function inspect(width, height, name) {
   await certFilterButtons.first().click();
   check("All certification filter resets", await page.locator("#cert-track article").count() === 31);
   if (width < 1280) {
+    const menu = page.locator("#mobile-nav");
+    check("closed dropdown remains mounted for exit animation", await menu.count() === 1);
+    check("closed menu is inert and hidden", await menu.getAttribute("aria-hidden") === "true" && !(await menu.isVisible()));
     await page.getByRole("button", { name: "Open navigation menu" }).click();
-    check("mobile navigation opens", await page.locator("#mobile-nav").isVisible());
-    check("mobile menu contains all eight destinations", await page.locator("#mobile-nav a[href^='#']").count() === 8);
+    await menu.waitFor({ state: "visible", timeout: 3000 });
+    check("mobile navigation opens", await menu.isVisible());
+    check("mobile menu contains all eight destinations", await menu.locator("a[href^='#']").count() === 8);
+    check("compact menu has no oversized marketing header", await menu.getByText("Find your way around.").count() === 0);
+    check("menu is a lightweight dropdown, not a full-screen panel", await menu.evaluate((el) => el.getBoundingClientRect().width <= 460 && el.getBoundingClientRect().height < innerHeight));
+    check("menu opens without locking page scroll", await page.evaluate(() => document.body.style.overflow !== "hidden"));
+    check("menu opening animation is configured", await menu.evaluate((el) => getComputedStyle(el).transitionDuration.split(",").some((duration) => parseFloat(duration) > 0.1)) || name === "reduced-motion");
     if (name === "mobile-390" || name === "short-mobile-320") {
       await page.screenshot({ path: output + "/" + name + "-menu.png", animations: "disabled" });
     }
-    check("opening menu locks background scrolling", await page.evaluate(() => document.body.style.overflow === "hidden"));
     await page.keyboard.press("Tab");
-    check("menu keyboard focus stays within controls", await page.evaluate(() => document.activeElement?.closest("#mobile-nav") !== null || document.activeElement?.getAttribute("aria-controls") === "mobile-nav"));
-
-    const menu = page.locator("#mobile-nav");
-    check("mobile navigation allows internal scrolling on short screens", await menu.evaluate((el) => {
+    check("menu stays keyboard accessible", await page.evaluate(() => document.activeElement?.closest("#mobile-nav") !== null));
+    check("short viewport menu scrolls internally if needed", await menu.evaluate((el) => {
       const style = getComputedStyle(el);
       return el.scrollHeight <= el.clientHeight + 1 || style.overflowY === "auto";
     }));
     await page.keyboard.press("Escape");
-    check("Escape closes mobile navigation", await page.locator("#mobile-nav").count() === 0);
-    check("closing menu restores page scrolling", await page.evaluate(() => document.body.style.overflow !== "hidden"));
-    check("Escape restores focus to menu button", await page.getByRole("button", { name: "Open navigation menu" }).evaluate((el) => document.activeElement === el));
+    check("close begins transition while menu stays mounted", await menu.count() === 1 && await menu.getAttribute("data-open") === "false");
+    await menu.waitFor({ state: "hidden", timeout: 3000 });
+    check("Escape closes navigation visually", !(await menu.isVisible()));
+    check("Escape restores focus to Explore button", await page.getByRole("button", { name: "Open navigation menu" }).evaluate((el) => document.activeElement === el));
     await page.getByRole("button", { name: "Open navigation menu" }).click();
-    await page.locator('#mobile-nav a[href="#highlights"]').click();
-    check("mobile navigation closes on selection", (await page.locator("#mobile-nav").count()) === 0);
+    await menu.waitFor({ state: "visible", timeout: 3000 });
+    await menu.locator('a[href="#highlights"]').click();
+    await menu.waitFor({ state: "hidden", timeout: 3000 });
+    check("section selection closes navigation with animation", await menu.getAttribute("data-open") === "false" && !(await menu.isVisible()));
     await page.getByRole("button", { name: "Open navigation menu" }).click();
-    // Test the actual outside backdrop, not the browser's right-edge scrollbar.
+    await menu.waitFor({ state: "visible", timeout: 3000 });
     await page.mouse.click(5, Math.max(85, height - 20));
-    check("outside tap closes mobile navigation", await page.locator("#mobile-nav").count() === 0);
+    await menu.waitFor({ state: "hidden", timeout: 3000 });
+    check("outside tap closes navigation", !(await menu.isVisible()));
   }
   if (name === "reduced-motion") {
     check("reduced motion preference respected", await page.evaluate(() => matchMedia("(prefers-reduced-motion: reduce)").matches));
