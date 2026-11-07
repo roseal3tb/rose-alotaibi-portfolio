@@ -3,14 +3,14 @@ import { Arrow, Arrows, Magnetic, Section, useCarousel, useParallax, useReveal }
 import { certCategories, certifications, contact, experience, highlights, projects, skills, volunteering, type CertCategory } from "@/data/portfolio";
 
 const nav = [
-  ["projects", "Projects", "Selected work & technical builds"],
-  ["about", "About", "Background & education"],
-  ["experience", "Experience", "Leadership, mentoring & internship"],
-  ["skills", "Skills", "My tools & capabilities"],
-  ["highlights", "Highlights", "Hackathons & milestones"],
-  ["certifications", "Certifications", "Courses & learning"],
-  ["volunteering", "Community", "Giving back"],
-  ["contact", "Contact", "Let's connect"],
+  ["projects", "Projects"],
+  ["about", "About"],
+  ["experience", "Experience"],
+  ["skills", "Skills"],
+  ["highlights", "Highlights"],
+  ["certifications", "Certifications"],
+  ["volunteering", "Community"],
+  ["contact", "Contact"],
 ] as const;
 
 export function Nav() {
@@ -34,26 +34,12 @@ export function Nav() {
 
   useEffect(() => {
     if (!open) return;
-    const originalOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
     const frame = requestAnimationFrame(() => menuRef.current?.querySelector<HTMLAnchorElement>("a[href]")?.focus());
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         event.preventDefault();
         setOpen(false);
         menuButtonRef.current?.focus();
-      } else if (event.key === "Tab") {
-        const elements = [menuButtonRef.current, ...Array.from(menuRef.current?.querySelectorAll<HTMLElement>("a[href]") ?? [])].filter(
-          (element): element is HTMLElement => Boolean(element)
-        );
-        const index = elements.indexOf(document.activeElement as HTMLElement);
-        if (event.shiftKey && index <= 0) {
-          event.preventDefault();
-          elements[elements.length - 1]?.focus();
-        } else if (!event.shiftKey && index === elements.length - 1) {
-          event.preventDefault();
-          elements[0]?.focus();
-        }
       }
     };
     const onPointerDown = (event: PointerEvent) => {
@@ -70,7 +56,6 @@ export function Nav() {
     window.addEventListener("resize", onResize);
     return () => {
       cancelAnimationFrame(frame);
-      document.body.style.overflow = originalOverflow;
       document.removeEventListener("keydown", onKeyDown);
       document.removeEventListener("pointerdown", onPointerDown, true);
       window.removeEventListener("hashchange", onHashChange);
@@ -79,7 +64,7 @@ export function Nav() {
   }, [open]);
 
   return (
-    <header className={"fixed inset-x-0 top-0 z-50 transition-all duration-500 " + (open ? "border-b bg-pearl/95 py-3" : scrolled ? "glass border-b py-3" : "py-4 md:py-6")}>
+    <header className={"fixed inset-x-0 top-0 z-50 transition-[background-color,border-color,padding] duration-500 " + (open ? "border-b border-lilac/50 bg-pearl/95 py-3" : scrolled ? "glass border-b py-3" : "py-4 md:py-6")}>
       <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 pill pill-solid">Skip to content</a>
       <nav aria-label="Primary" className="relative z-50 mx-auto flex max-w-7xl items-center justify-between px-6 md:px-10">
         <a href="#top" aria-label="Rose Alotaibi — home" className="inline-flex shrink-0 items-center rounded-full" title="Rose Alotaibi">
@@ -94,7 +79,8 @@ export function Nav() {
           ))}
         </ul>
         <a href={"mailto:" + contact.email} className="pill pill-solid hidden !py-2.5 xl:inline-flex">Say hello</a>
-        <button ref={menuButtonRef} type="button" className="group inline-flex min-h-11 items-center gap-3 rounded-full border border-lilac bg-pearl/90 px-4 py-2 text-sm shadow-sm transition-colors duration-300 hover:border-mauve hover:bg-lavender xl:hidden"
+        <button ref={menuButtonRef} type="button"
+          className="group inline-flex min-h-11 items-center gap-3 rounded-full border border-lilac bg-pearl/90 px-4 py-2 text-sm shadow-sm transition-[background-color,border-color] duration-300 hover:border-mauve hover:bg-lavender xl:hidden"
           aria-label={open ? "Close navigation menu" : "Open navigation menu"} aria-expanded={open} aria-controls="mobile-nav" onClick={() => setOpen((value) => !value)}>
           <span className="font-medium tracking-[0.08em]">{open ? "Close" : "Explore"}</span>
           <span aria-hidden="true" className="flex h-5 w-5 flex-col items-center justify-center gap-1">
@@ -103,41 +89,20 @@ export function Nav() {
           </span>
         </button>
       </nav>
-      {open && (
-        <div className="fixed inset-x-0 bottom-0 top-[68px] z-40 xl:hidden">
-          <button type="button" tabIndex={-1} className="absolute inset-0 w-full cursor-default bg-plum/30 backdrop-blur-[6px]" aria-label="Dismiss navigation" onClick={() => setOpen(false)} />
-          <nav ref={menuRef} id="mobile-nav" aria-label="Mobile" className="premium-menu-panel no-scrollbar absolute inset-x-3 top-3 mx-auto max-h-[calc(100dvh-88px)] max-w-3xl overflow-y-auto overscroll-contain rounded-[2rem] border border-lilac/60 bg-pearl shadow-[0_30px_90px_-25px_rgba(61,41,78,0.4)] sm:inset-x-6">
-            <div className="relative overflow-hidden rounded-t-[2rem] bg-gradient-to-br from-lavender via-pearl to-lilac/40 px-6 pb-5 pt-6 sm:px-8">
-              <div aria-hidden="true" className="absolute -right-10 -top-24 h-64 w-64 rounded-full bg-orchid/20 blur-3xl" />
-              <div className="relative flex items-center justify-between gap-4">
-                <p className="text-[0.7rem] font-medium uppercase tracking-[0.24em] text-mauve">The portfolio / 2026</p>
-                <span className="rounded-full border border-lilac bg-pearl/60 px-3 py-1 text-[0.68rem] uppercase tracking-[0.14em] text-mauve">Navigation</span>
-              </div>
-              <h2 className="relative mt-3 font-display text-[clamp(2.1rem,8vw,3.2rem)] font-light leading-none">Find your way <em className="text-mauve">around.</em></h2>
-              <p className="relative mt-3 text-sm text-muted-foreground">Explore what I build, lead, and learn.</p>
-            </div>
-            <ol className="grid gap-1 p-3 sm:grid-cols-2 sm:p-4">
-              {nav.map(([id, label, description], index) => (
-                <li key={id}>
-                  <a href={"#" + id} onClick={() => setOpen(false)} aria-current={active === id ? "location" : undefined}
-                    className={"group flex min-h-[62px] items-center gap-3 rounded-2xl border px-4 py-2.5 transition-[background-color,border-color,transform] duration-300 hover:translate-x-1 hover:border-lilac hover:bg-lavender/70 focus-visible:border-mauve focus-visible:bg-lavender " + (active === id ? "border-lilac bg-lavender/65" : "border-transparent")}>
-                    <span className="self-start pt-1 text-[0.7rem] font-medium text-mauve">{String(index + 1).padStart(2, "0")}</span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block font-display text-[1.65rem] leading-none">{label}</span>
-                      <span className="mt-1 block text-[0.72rem] leading-snug text-muted-foreground">{description}</span>
-                    </span>
-                    <span aria-hidden="true" className="text-xl text-mauve transition-transform duration-300 group-hover:translate-x-1">↗</span>
-                  </a>
-                </li>
-              ))}
-            </ol>
-            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-lilac/60 px-6 py-4 sm:px-8">
-              <p className="font-display text-xl italic">Let's create something.</p>
-              <a href={"mailto:" + contact.email} onClick={() => setOpen(false)} className="pill pill-solid !py-2.5">Say hello <Arrow dir="up-right" /></a>
-            </div>
-          </nav>
-        </div>
-      )}
+      <nav ref={menuRef} id="mobile-nav" aria-label="Mobile" aria-hidden={!open} inert={!open} data-open={open}
+        className="compact-nav-panel glass absolute inset-x-4 top-full z-40 mx-auto mt-2 max-h-[calc(100dvh-6rem)] max-w-[28rem] overflow-y-auto overscroll-contain rounded-[1.6rem] border border-lilac/70 shadow-[0_20px_55px_-25px_rgba(61,41,78,0.3)] xl:hidden">
+        <ul className="grid gap-1 p-3">
+          {nav.map(([id, label]) => (
+            <li key={id}>
+              <a href={"#" + id} onClick={() => setOpen(false)} aria-current={active === id ? "location" : undefined}
+                className={"flex min-h-11 items-center justify-between rounded-2xl px-4 py-2.5 text-[0.95rem] font-medium tracking-[0.02em] transition-[background-color,color] duration-200 hover:bg-lavender focus-visible:bg-lavender " + (active === id ? "bg-lavender/75 text-mauve" : "text-plum")}>
+                <span>{label}</span>
+                {active === id && <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-mauve" />}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
     </header>
   );
 }
