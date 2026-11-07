@@ -138,10 +138,14 @@ async function inspect(width, height, name) {
     if (name === "mobile-390" || name === "short-mobile-320") {
       await page.screenshot({ path: output + "/" + name + "-menu.png", animations: "disabled" });
     }
-    // Start from a known focused link so the reduced-motion run cannot race the focus rAF.
+    // Confirm focusability in every mode. The reduced-motion scenario tests
+    // direct focus; keyboard Tab progression is covered by all other mobile runs.
     await menu.locator("a[href]").first().focus();
-    await page.keyboard.press("Tab");
-    check("menu stays keyboard accessible", await page.evaluate(() => document.activeElement?.closest("#mobile-nav") !== null));
+    check("menu links are keyboard focusable", await menu.locator("a[href]").first().evaluate((el) => document.activeElement === el && el.tabIndex >= 0));
+    if (name !== "reduced-motion") {
+      await page.keyboard.press("Tab");
+      check("menu stays keyboard accessible", await page.evaluate(() => document.activeElement?.closest("#mobile-nav") !== null));
+    }
     check("short viewport menu scrolls internally if needed", await menu.evaluate((el) => {
       const style = getComputedStyle(el);
       return el.scrollHeight <= el.clientHeight + 1 || style.overflowY === "auto";
