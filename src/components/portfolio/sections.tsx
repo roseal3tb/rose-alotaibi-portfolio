@@ -56,15 +56,23 @@ export function Nav() {
         }
       }
     };
+    const onPointerDown = (event: PointerEvent) => {
+      const target = event.target as Node;
+      if (!menuRef.current?.contains(target) && !menuButtonRef.current?.contains(target)) {
+        setOpen(false);
+      }
+    };
     const onHashChange = () => setOpen(false);
     const onResize = () => { if (innerWidth >= 1280) setOpen(false); };
     document.addEventListener("keydown", onKeyDown);
+    document.addEventListener("pointerdown", onPointerDown, true);
     window.addEventListener("hashchange", onHashChange);
     window.addEventListener("resize", onResize);
     return () => {
       cancelAnimationFrame(frame);
       document.body.style.overflow = originalOverflow;
       document.removeEventListener("keydown", onKeyDown);
+      document.removeEventListener("pointerdown", onPointerDown, true);
       window.removeEventListener("hashchange", onHashChange);
       window.removeEventListener("resize", onResize);
     };
