@@ -71,7 +71,7 @@ export function Nav() {
   }, [open]);
 
   return (
-    <header className={"fixed inset-x-0 top-0 z-50 transition-all duration-500 " + (scrolled || open ? "glass border-b py-3" : "py-4 md:py-6")}>
+    <header className={"fixed inset-x-0 top-0 z-50 transition-all duration-500 " + (open ? "border-b bg-pearl/95 py-3" : scrolled ? "glass border-b py-3" : "py-4 md:py-6")}>
       <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 pill pill-solid">Skip to content</a>
       <nav aria-label="Primary" className="relative z-50 mx-auto flex max-w-7xl items-center justify-between px-6 md:px-10">
         <a href="#top" aria-label="Rose Alotaibi — home" className="inline-flex shrink-0 items-center rounded-full" title="Rose Alotaibi">
