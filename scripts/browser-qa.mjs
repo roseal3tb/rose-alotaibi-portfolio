@@ -78,6 +78,11 @@ async function inspect(width, height, name) {
   function check(label, condition) { assertions.push({ label, passed: Boolean(condition) }); if (!condition) failed = true; }
   check("no horizontal page overflow", basic.overflowPx <= 2);
   check("8 project cards", basic.projectCards === 8);
+  check("each project explains developed skills", await page.locator('#project-track article:has-text("Skills practiced & developed")').count() === 8);
+  check("experience includes detailed responsibilities", await page.locator('#experience li:has(> div) ul li').count() >= 20);
+  check("student mentorship grouped with council", await page.locator('#experience li').filter({ hasText: "Student Leadership" }).filter({ hasText: "Big Sibling" }).count() >= 1);
+  check("NUGTTAH mentions social creator work", await page.locator('#experience').getByText(/micro-influencers/).count() >= 1);
+
   check("31 certificate cards", basic.certificateCards === 31);
   check("all project images load after being scrolled into view", basic.images.every((x) => x.loaded));
   check("no local HTTP errors", failingResponses.length === 0);
@@ -121,6 +126,11 @@ async function inspect(width, height, name) {
   if (width < 1280) {
     await page.getByRole("button", { name: "Open navigation menu" }).click();
     check("mobile navigation opens", await page.locator("#mobile-nav").isVisible());
+    check("mobile menu contains all eight destinations", await page.locator("#mobile-nav a[href^='#']").count() === 8);
+    check("opening menu locks background scrolling", await page.evaluate(() => document.body.style.overflow === "hidden"));
+    await page.keyboard.press("Tab");
+    check("menu keyboard focus stays within controls", await page.evaluate(() => document.activeElement?.closest("#mobile-nav") !== null || document.activeElement?.getAttribute("aria-controls") === "mobile-nav"));
+
     const menu = page.locator("#mobile-nav");
     check("mobile navigation allows internal scrolling on short screens", await menu.evaluate((el) => {
       const style = getComputedStyle(el);
@@ -128,6 +138,7 @@ async function inspect(width, height, name) {
     }));
     await page.keyboard.press("Escape");
     check("Escape closes mobile navigation", await page.locator("#mobile-nav").count() === 0);
+    check("closing menu restores page scrolling", await page.evaluate(() => document.body.style.overflow !== "hidden"));
     check("Escape restores focus to menu button", await page.getByRole("button", { name: "Open navigation menu" }).evaluate((el) => document.activeElement === el));
     await page.getByRole("button", { name: "Open navigation menu" }).click();
     await page.locator('#mobile-nav a[href="#highlights"]').click();
