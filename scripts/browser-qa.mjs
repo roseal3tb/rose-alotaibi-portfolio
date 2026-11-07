@@ -138,6 +138,8 @@ async function inspect(width, height, name) {
     if (name === "mobile-390" || name === "short-mobile-320") {
       await page.screenshot({ path: output + "/" + name + "-menu.png", animations: "disabled" });
     }
+    // Start from a known focused link so the reduced-motion run cannot race the focus rAF.
+    await menu.locator("a[href]").first().focus();
     await page.keyboard.press("Tab");
     check("menu stays keyboard accessible", await page.evaluate(() => document.activeElement?.closest("#mobile-nav") !== null));
     check("short viewport menu scrolls internally if needed", await menu.evaluate((el) => {
