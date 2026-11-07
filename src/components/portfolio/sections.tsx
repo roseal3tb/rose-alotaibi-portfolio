@@ -34,7 +34,6 @@ export function Nav() {
 
   useEffect(() => {
     if (!open) return;
-    const frame = requestAnimationFrame(() => menuRef.current?.querySelector<HTMLAnchorElement>("a[href]")?.focus());
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         event.preventDefault();
@@ -55,7 +54,6 @@ export function Nav() {
     window.addEventListener("hashchange", onHashChange);
     window.addEventListener("resize", onResize);
     return () => {
-      cancelAnimationFrame(frame);
       document.removeEventListener("keydown", onKeyDown);
       document.removeEventListener("pointerdown", onPointerDown, true);
       window.removeEventListener("hashchange", onHashChange);
