@@ -97,7 +97,7 @@ export function Nav() {
       </nav>
       {open && (
         <div className="fixed inset-x-0 bottom-0 top-[68px] z-40 xl:hidden">
-          <button type="button" className="absolute inset-0 w-full cursor-default bg-plum/30 backdrop-blur-[6px]" aria-label="Dismiss navigation" onClick={() => setOpen(false)} />
+          <button type="button" tabIndex={-1} className="absolute inset-0 w-full cursor-default bg-plum/30 backdrop-blur-[6px]" aria-label="Dismiss navigation" onClick={() => setOpen(false)} />
           <nav ref={menuRef} id="mobile-nav" aria-label="Mobile" className="premium-menu-panel no-scrollbar absolute inset-x-3 top-3 mx-auto max-h-[calc(100dvh-88px)] max-w-3xl overflow-y-auto overscroll-contain rounded-[2rem] border border-lilac/60 bg-pearl shadow-[0_30px_90px_-25px_rgba(61,41,78,0.4)] sm:inset-x-6">
             <div className="relative overflow-hidden rounded-t-[2rem] bg-gradient-to-br from-lavender via-pearl to-lilac/40 px-6 pb-5 pt-6 sm:px-8">
               <div aria-hidden="true" className="absolute -right-10 -top-24 h-64 w-64 rounded-full bg-orchid/20 blur-3xl" />
