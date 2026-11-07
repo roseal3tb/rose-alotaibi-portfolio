@@ -17,6 +17,8 @@ export function Nav() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState("");
+  const headerRef = useRef<HTMLElement>(null);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
   useEffect(() => {
     const on = () => setScrolled(window.scrollY > 40);
     on();
@@ -28,8 +30,30 @@ export function Nav() {
     document.querySelectorAll("main section[id]").forEach((s) => io.observe(s));
     return () => { window.removeEventListener("scroll", on); io.disconnect(); };
   }, []);
+  useEffect(() => {
+    if (!open) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setOpen(false);
+        menuButtonRef.current?.focus();
+      }
+    };
+    const onPointerDown = (event: PointerEvent) => {
+      if (!headerRef.current?.contains(event.target as Node)) setOpen(false);
+    };
+    const onHashChange = () => setOpen(false);
+    document.addEventListener("keydown", onKeyDown);
+    document.addEventListener("pointerdown", onPointerDown);
+    window.addEventListener("hashchange", onHashChange);
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      document.removeEventListener("pointerdown", onPointerDown);
+      window.removeEventListener("hashchange", onHashChange);
+    };
+  }, [open]);
+
   return (
-    <header className={`fixed inset-x-0 top-0 z-50 transition-all duration-700 ${scrolled ? "glass border-b py-3" : "py-6"}`}>
+    <header ref={headerRef} className={`fixed inset-x-0 top-0 z-50 transition-all duration-700 ${scrolled ? "glass border-b py-3" : "py-4 md:py-6"}`}>
       <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 pill pill-solid">Skip to content</a>
       <nav aria-label="Primary" className="mx-auto flex max-w-7xl items-center justify-between px-6 md:px-10">
         <a href="#top" aria-label="Rose Alotaibi — home" className="inline-flex shrink-0 items-center rounded-full" title="Rose Alotaibi"><img src="/ra-monogram.svg" alt="RA — Rose Alotaibi" className="h-11 w-[68px] object-contain transition-transform duration-300 hover:scale-105 md:h-12 md:w-[76px]" width={76} height={52} /></a>
@@ -42,16 +66,18 @@ export function Nav() {
           ))}
         </ul>
         <a href={`mailto:${contact.email}`} className="pill pill-solid hidden !py-2.5 xl:inline-flex">Say hello</a>
-        <button type="button" className="pill pill-ghost !px-4 !py-2 xl:hidden" aria-expanded={open} aria-controls="mobile-nav" onClick={() => setOpen((o) => !o)}>
+        <button ref={menuButtonRef} type="button" className="pill pill-ghost !min-h-11 !px-5 !py-2 xl:hidden" aria-label={open ? "Close navigation menu" : "Open navigation menu"} aria-expanded={open} aria-controls="mobile-nav" onClick={() => setOpen((o) => !o)}>
           {open ? "Close" : "Menu"}
         </button>
       </nav>
       {open && (
-        <ul id="mobile-nav" className="glass mx-4 mt-3 grid gap-1 rounded-3xl border p-3 xl:hidden">
-          {nav.map(([id, label]) => (
-            <li key={id}><a onClick={() => setOpen(false)} href={`#${id}`} className="block rounded-full px-4 py-3 hover:bg-lavender">{label}</a></li>
-          ))}
-        </ul>
+        <nav aria-label="Mobile" className="xl:hidden">
+          <ul id="mobile-nav" className="glass mx-4 mt-3 grid max-h-[calc(100dvh-6.5rem)] gap-1 overflow-y-auto overscroll-contain rounded-3xl border p-3 shadow-[var(--shadow-soft)]">
+            {nav.map(([id, label]) => (
+              <li key={id}><a onClick={() => setOpen(false)} href={`#${id}`} aria-current={active === id ? "location" : undefined} className="block min-h-11 rounded-full px-4 py-3 hover:bg-lavender focus-visible:bg-lavender">{label}</a></li>
+            ))}
+          </ul>
+        </nav>
       )}
     </header>
   );
@@ -73,7 +99,7 @@ export function Hero() {
   useParallax(a, 0.25);
   useParallax(b, -0.12);
   return (
-    <section id="top" className="relative flex min-h-[100svh] items-end overflow-hidden px-6 pb-16 pt-32 md:px-10 md:pb-24">
+    <section id="top" className="relative flex min-h-[82svh] items-end overflow-hidden px-6 pb-14 pt-28 sm:min-h-[85svh] md:min-h-[100svh] md:px-10 md:pb-24 md:pt-32">
       <div ref={a} aria-hidden className="absolute -right-24 top-10"><div className="orb animate-drift h-[28rem] w-[28rem] bg-lilac/60" /></div>
       <div ref={b} aria-hidden className="absolute -left-32 bottom-0"><div className="orb animate-drift h-[24rem] w-[24rem] bg-lavender" style={{ animationDelay: "-6s" }} /></div>
       <div className="relative mx-auto w-full max-w-7xl">
@@ -84,7 +110,10 @@ export function Hero() {
           <span className="block pl-[8vw] italic text-mauve"><Letters text="Alotaibi" delay={450} /></span>
         </h1>
         <div className="mt-12 flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
-          <p className="letter max-w-md font-display text-2xl italic md:text-3xl" style={{ animationDelay: "1100ms" }}>Where technology meets creativity.</p>
+          <div className="max-w-md">
+            <p className="letter font-display text-2xl italic md:text-3xl" style={{ animationDelay: "1100ms" }}>Where technology meets creativity.</p>
+            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">Information Technology · Networks &amp; IoT Engineering</p>
+          </div>
           <div className="letter flex flex-wrap gap-3" style={{ animationDelay: "1300ms" }}>
             <Magnetic><a href="#projects" className="pill pill-solid">View projects <Arrow /></a></Magnetic>
             <Magnetic><a href="#contact" className="pill pill-ghost">Get in touch</a></Magnetic>
@@ -102,8 +131,13 @@ export function Projects() {
     const el = c.ref.current;
     if (!el) return;
     const on = () => {
-      const w = (el.firstElementChild as HTMLElement)?.offsetWidth || 1;
-      setIdx(Math.round(el.scrollLeft / w));
+      const cards = Array.from(el.children) as HTMLElement[];
+      if (!cards.length) return;
+      const firstOffset = cards[0].offsetLeft;
+      const index = cards.reduce((best, card, i) =>
+        Math.abs(card.offsetLeft - firstOffset - el.scrollLeft) <
+        Math.abs(cards[best].offsetLeft - firstOffset - el.scrollLeft) ? i : best, 0);
+      setIdx(index);
     };
     el.addEventListener("scroll", on, { passive: true });
     return () => el.removeEventListener("scroll", on);
@@ -124,20 +158,20 @@ export function Projects() {
           <article key={p.title} className="group w-[86%] shrink-0 snap-start md:w-[calc(50%-12px)]">
             <a href={p.url} target="_blank" rel="noopener noreferrer" className="block rounded-[2rem] focus-visible:rounded-[2rem]"
               aria-label={`${p.title} — ${p.kind === "live" ? "visit live site" : "explore related repository"} (opens in new tab)`}>
-              <div className="relative aspect-[16/10] overflow-hidden rounded-[2rem] shadow-[var(--shadow-soft)]">
+              <div className={`relative aspect-[16/10] overflow-hidden rounded-[2rem] shadow-[var(--shadow-soft)] ${p.imageFit === "contain" ? "bg-lavender" : ""}`}>
                 <img src={p.image} alt={`${p.title} ${p.kind === "live" ? "website screenshot" : "project cover"}`} width={1280} height={p.kind === "live" ? 720 : 800}
-                  loading={i < 2 ? "eager" : "lazy"} className="h-full w-full object-cover object-center" />
+                  loading="lazy" decoding="async" className={`h-full w-full object-center ${p.imageFit === "contain" ? "object-contain" : "object-cover"}`} />
                 <div className="absolute inset-0 bg-gradient-to-t from-plum/70 via-plum/0 to-transparent opacity-0 transition-opacity duration-700 group-hover:opacity-100" />
                 <span className="glass absolute left-5 top-5 rounded-full px-3 py-1.5 text-xs tracking-wider">{String(i + 1).padStart(2, "0")} · {p.category}</span>
-                <span className="absolute bottom-5 right-5 translate-y-3 rounded-full bg-pearl px-4 py-2 text-sm opacity-0 transition-all duration-700 group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:opacity-100">
-                  {p.kind === "live" ? "Visit live site" : "Explore related repository"} <Arrow dir="up-right" className="inline" />
+                <span className="absolute bottom-3 right-3 inline-flex min-h-11 items-center gap-2 rounded-full bg-pearl px-4 py-2 text-sm text-plum shadow-sm transition-all duration-300 sm:bottom-5 sm:right-5 md:translate-y-3 md:opacity-0 md:group-hover:translate-y-0 md:group-hover:opacity-100 md:group-focus-within:translate-y-0 md:group-focus-within:opacity-100">
+                  <span className="md:hidden">Open</span><span className="hidden md:inline">{p.kind === "live" ? "Visit live site" : "Explore related repository"}</span> <Arrow dir="up-right" className="inline" />
                 </span>
               </div>
             </a>
             <div className="mt-6 px-1">
-              <div className="flex items-baseline justify-between gap-4">
+              <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
                 <h3 className="font-display text-3xl md:text-4xl">{p.title}</h3>
-                <a href={p.url} target="_blank" rel="noopener noreferrer" className="shrink-0 text-sm text-mauve underline-offset-4 hover:underline">
+                <a href={p.url} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 shrink-0 items-center text-sm text-mauve underline-offset-4 hover:underline">
                   {p.kind === "live" ? "Visit live site" : "Explore related repository"}<span className="sr-only"> for {p.title} (opens in new tab)</span>
                 </a>
               </div>
@@ -157,8 +191,8 @@ export function About() {
   return (
     <Section id="about" eyebrow="02 — About & Education" title={<>A curious <em className="text-mauve">builder</em></>}>
       <div className="grid gap-12 md:grid-cols-12">
-        <p className="reveal font-display text-3xl font-light leading-snug md:col-span-7 md:text-4xl">
-          I'm Rose Alotaibi, an Information Technology student at King Saud University specializing in Networks &amp; IoT Engineering. I explore the intersection of technology, creativity, and digital experiences through hands-on projects, leadership, and continuous learning.
+        <p className="reveal font-display text-[clamp(1.45rem,6vw,1.75rem)] font-light leading-[1.4] md:col-span-7 md:text-4xl">
+          I'm Rose Alotaibi, an Information Technology student at King Saud University specializing in Networks &amp; IoT Engineering. I create digital experiences through hands-on projects, design, and teamwork.
         </p>
         <div className="reveal md:col-span-4 md:col-start-9" style={{ transitionDelay: "150ms" }}>
           <div className="rounded-[2rem] border bg-card p-8">
@@ -211,7 +245,7 @@ export function Skills() {
             <p className="eyebrow mb-6">{g.group}</p>
             <ul className="flex flex-wrap gap-x-6 gap-y-2">
               {g.items.map((s) => (
-                <li key={s} className="font-display text-3xl font-light transition-colors duration-300 hover:text-mauve md:text-4xl">{s}</li>
+                <li key={s} className="font-display text-[1.75rem] font-light transition-colors duration-300 hover:text-mauve sm:text-3xl md:text-4xl">{s}</li>
               ))}
             </ul>
           </div>
@@ -246,17 +280,18 @@ export function Certifications() {
   return (
     <Section id="certifications" eyebrow="06 — Certifications & Courses" title={<>Always <em className="text-mauve">learning</em></>}
       intro="Courses, workshops, programs and participation highlights. Filter by area of focus.">
-      <div className="reveal mb-8 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-        <div role="group" aria-label="Filter certifications by category" className="flex flex-wrap gap-2">
-          <button type="button" className="chip" aria-pressed={filter === "All"} onClick={() => setFilter("All")}>All · {certifications.length}</button>
+      <div className="reveal mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <p className="text-sm text-muted-foreground md:hidden">Swipe to explore categories <span aria-hidden="true">→</span></p>
+        <div role="group" aria-label="Filter certifications by category" tabIndex={0} className="no-scrollbar -mx-6 flex snap-x flex-nowrap gap-2 overflow-x-auto px-6 pb-2 md:mx-0 md:flex-wrap md:overflow-visible md:px-0 md:pb-0">
+          <button type="button" className="chip inline-flex min-h-11 shrink-0 snap-start items-center whitespace-nowrap !text-sm" aria-pressed={filter === "All"} onClick={() => setFilter("All")}>All · {certifications.length}</button>
           {certCategories.filter((cat) => counts(cat) > 0).map((cat) => (
-            <button key={cat} type="button" className="chip" aria-pressed={filter === cat} onClick={() => setFilter(cat)}>{cat} · {counts(cat)}</button>
+            <button key={cat} type="button" className="chip inline-flex min-h-11 shrink-0 snap-start items-center whitespace-nowrap !text-sm" aria-pressed={filter === cat} onClick={() => setFilter(cat)}>{cat} · {counts(cat)}</button>
           ))}
         </div>
         <Arrows label="certificate" controls="cert-track" {...c} />
       </div>
-      <p className="sr-only" aria-live="polite">{list.length} items shown</p>
-      <div className="mb-6 flex gap-6 text-xs tracking-wider text-muted-foreground">
+      <p className="mb-5 text-sm text-muted-foreground" aria-live="polite">Showing {list.length} {list.length === 1 ? "entry" : "entries"}{filter !== "All" ? ` in ${filter}` : ""}.</p>
+      <div className="mb-6 hidden flex-wrap gap-6 text-sm tracking-wider text-muted-foreground md:flex">
         <span className="flex items-center gap-2"><span className="h-2 w-2 rounded-full bg-orchid" />Learning course</span>
         <span className="flex items-center gap-2"><span className="h-2 w-2 rounded-full border border-mauve" />Programs, workshops &amp; participation</span>
         {certifications.some((entry) => entry.type === "Certification") && <span className="flex items-center gap-2"><span className="h-2 w-2 rounded-full bg-plum" />Professional certification</span>}
@@ -266,7 +301,7 @@ export function Certifications() {
         className="no-scrollbar -mx-6 flex snap-x snap-mandatory gap-5 overflow-x-auto scroll-px-6 px-6 pb-4 md:-mx-10 md:scroll-px-10 md:px-10">
         {list.length === 0 && <p className="py-16 text-muted-foreground">Entries for this category are coming soon.</p>}
         {list.map((cert) => (
-          <article key={cert.title + cert.issuer} className="flex min-h-[18rem] w-[78%] shrink-0 snap-start flex-col justify-between rounded-[2rem] border bg-card p-8 transition-all duration-500 hover:-translate-y-1 hover:border-orchid hover:shadow-[var(--shadow-soft)] sm:w-[calc(50%-10px)] lg:w-[calc(33.333%-14px)]">
+          <article key={cert.title + cert.issuer} className="flex min-h-[18rem] w-[85%] shrink-0 snap-start flex-col justify-between rounded-[2rem] border bg-card p-6 sm:w-[calc(50%-10px)] sm:p-8 transition-all duration-500 hover:-translate-y-1 hover:border-orchid hover:shadow-[var(--shadow-soft)] lg:w-[calc(33.333%-14px)]">
             <div className="flex items-center justify-between">
               <span className="flex items-center gap-2 text-xs tracking-wider text-mauve">
                 <span className={`h-2 w-2 rounded-full ${cert.type === "Course" ? "bg-orchid" : cert.type === "Certification" ? "bg-plum" : "border border-mauve"}`} />
@@ -325,7 +360,7 @@ export function Contact() {
         <footer className="flex flex-col items-center justify-between gap-4 pt-8 text-sm text-muted-foreground md:flex-row">
           <p>© 2026 Rose Alotaibi</p>
           <p className="font-display italic">Where technology meets creativity.</p>
-          <a href="#top" className="hover:text-mauve">Back to top ↑</a>
+          <a href="#top" className="inline-flex min-h-11 items-center hover:text-mauve">Back to top ↑</a>
         </footer>
       </div>
     </section>
