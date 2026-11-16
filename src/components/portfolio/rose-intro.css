@@ -1,0 +1,125 @@
+/* The original portfolio palette: pearl/lavender, mauve rose, deep plum. */
+.rose-intro {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: #faf8ff;
+  isolation: isolate;
+  opacity: 1;
+  transition: opacity 620ms cubic-bezier(.32, .02, .21, 1), visibility 620ms;
+}
+.rose-intro--leaving { opacity: 0; visibility: hidden; pointer-events: none; }
+.rose-intro__glow {
+  position: absolute;
+  inset: -30%;
+  pointer-events: none;
+  background: radial-gradient(circle at 49% 44%, #eee6f9 0%, #faf8ff 43%, #faf8ff 70%);
+  animation: rose-glow 3.1s ease-out both;
+}
+.rose-intro__art {
+  position: relative;
+  width: min(82vw, 680px, 82dvh);
+  max-height: 70dvh;
+  aspect-ratio: 1800 / 1474;
+  z-index: 1;
+  transform: translateY(-1.5vh);
+}
+.rose-intro__stem,
+.rose-intro__bloom {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  user-select: none;
+  -webkit-user-drag: none;
+  pointer-events: none;
+}
+.rose-intro__stem {
+  animation: rose-stem-draw 1.22s .1s cubic-bezier(.22, 1, .36, 1) both,
+             rose-stem-unravel .9s 2.52s cubic-bezier(.6, .05, .75, .5) forwards;
+}
+.rose-intro__bloom {
+  transform-origin: 27% 39%;
+  animation: rose-bloom 1.3s .68s cubic-bezier(.18, 1, .22, 1) both,
+             rose-bloom-fade .77s 2.52s ease-in forwards;
+}
+.rose-intro__petals {
+  position: absolute;
+  z-index: 2;
+  left: 33%;
+  top: 21%;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+.rose-intro__petal {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: clamp(13px, 3.8vw, 31px);
+  height: clamp(18px, 5.2vw, 43px);
+  fill: #a071b0;
+  opacity: 0;
+  filter: drop-shadow(0 4px 7px rgb(79 33 94 / 8%));
+  animation: rose-petal-drift 1.05s calc(2.30s + var(--flight-delay)) cubic-bezier(.16, .65, .4, 1) both;
+}
+.rose-intro__petal:nth-child(2n) { fill: #855394; }
+.rose-intro__petal:nth-child(3n) { fill: #b68bbe; }
+.rose-intro__skip {
+  position: absolute;
+  z-index: 3;
+  right: max(22px, env(safe-area-inset-right) + 18px);
+  bottom: max(24px, env(safe-area-inset-bottom) + 18px);
+  min-width: 104px;
+  min-height: 44px;
+  padding: 10px 17px;
+  border: 1px solid #d4b8ee;
+  border-radius: 999px;
+  background: #faf8ffcf;
+  color: #3d294e;
+  font: 500 13px/1.2 "Jost", system-ui, sans-serif;
+  letter-spacing: .055em;
+  cursor: pointer;
+  transition: background-color .18s ease, border-color .18s ease;
+}
+.rose-intro__skip:hover,
+.rose-intro__skip:focus-visible { background: #eee5ff; border-color: #8054a4; }
+@keyframes rose-glow { from { opacity: .35; transform: scale(.92); } to { opacity: 1; transform: scale(1.08); } }
+@keyframes rose-stem-draw {
+  0% { opacity: 0; clip-path: inset(100% 0 0 0); }
+  12% { opacity: 1; }
+  100% { opacity: 1; clip-path: inset(0 0 0 0); }
+}
+@keyframes rose-bloom {
+  0% { opacity: 0; transform: scale(.02) rotate(-19deg); filter: blur(4px); }
+  58% { opacity: 1; transform: scale(1.06) rotate(3deg); filter: blur(0); }
+  78% { transform: scale(.97) rotate(-1deg); }
+  100% { opacity: 1; transform: scale(1) rotate(0deg); }
+}
+@keyframes rose-bloom-fade {
+  0%, 20% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes rose-stem-unravel {
+  0%, 16% { opacity: 1; clip-path: inset(0 0 0 0); filter: blur(0); }
+  100% { opacity: 0; clip-path: inset(0 0 100% 0); filter: blur(3px); }
+}
+@keyframes rose-petal-drift {
+  0%, 8% { opacity: 0; transform: translate3d(0, 0, 0) scale(.2) rotate(0); }
+  21% { opacity: .92; }
+  100% { opacity: 0; transform: translate3d(var(--flight-x), var(--flight-y), 0) scale(.73) rotate(var(--flight-rotation)); }
+}
+@media (max-width: 440px) {
+  .rose-intro__art { width: 94vw; }
+  .rose-intro__glow { background: radial-gradient(circle at 49% 46%, #eee6f9 0%, #faf8ff 58%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  /* JS also removes the intro immediately. Nothing should trap the visitor here. */
+  .rose-intro { display: none !important; }
+  .rose-intro *, .rose-intro *::before, .rose-intro *::after { animation: none !important; transition: none !important; }
+}
