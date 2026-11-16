@@ -24,11 +24,11 @@ export function useReveal<T extends HTMLElement>() {
 export function Section({ id, eyebrow, title, children, intro }: { id: string; eyebrow: string; title: ReactNode; intro?: string; children: ReactNode }) {
   const ref = useReveal<HTMLElement>();
   return (
-    <section id={id} ref={ref} aria-labelledby={`${id}-title`} className="relative mx-auto max-w-7xl px-6 py-24 md:px-10 md:py-36">
-      <div className="reveal mb-14 grid gap-6 md:grid-cols-12 md:items-end">
+    <section id={id} ref={ref} aria-labelledby={`${id}-title`} className="relative mx-auto max-w-7xl px-6 py-16 sm:py-20 md:px-10 md:py-32">
+      <div className="reveal mb-10 grid gap-6 md:mb-14 md:grid-cols-12 md:items-end">
         <div className="md:col-span-7">
           <p className="eyebrow mb-5">{eyebrow}</p>
-          <h2 id={`${id}-title`} className="font-display text-5xl font-light leading-[0.95] md:text-7xl">{title}</h2>
+          <h2 id={`${id}-title`} className="font-display text-[clamp(2.65rem,11vw,3.25rem)] font-light leading-[1.04] md:text-7xl md:leading-[0.95]">{title}</h2>
         </div>
         {intro && <p className="max-w-md text-base leading-relaxed text-muted-foreground md:col-span-5 md:justify-self-end">{intro}</p>}
       </div>

@@ -78,35 +78,131 @@ async function inspect(width, height, name) {
   function check(label, condition) { assertions.push({ label, passed: Boolean(condition) }); if (!condition) failed = true; }
   check("no horizontal page overflow", basic.overflowPx <= 2);
   check("8 project cards", basic.projectCards === 8);
+  check("each project explains developed skills", await page.locator('#project-track article:has-text("Skills practiced & developed")').count() === 8);
+  check("experience includes detailed responsibilities", await page.locator('#experience li:has(> div) ul li').count() >= 20);
+  check("student mentorship grouped with council", await page.locator('#experience li').filter({ hasText: "Student Leadership" }).filter({ hasText: "Big Sibling" }).count() >= 1);
+  check("NUGTTAH mentions social creator work", await page.locator('#experience').getByText(/micro-influencers/).count() >= 1);
+
   check("31 certificate cards", basic.certificateCards === 31);
   check("all project images load after being scrolled into view", basic.images.every((x) => x.loaded));
   check("no local HTTP errors", failingResponses.length === 0);
   check("no browser runtime errors", errors.length === 0);
   check("no critical/serious axe violations", ax.every((v) => !["critical", "serious"].includes(v.impact)));
+  const tapTargets = await page.evaluate(() => {
+    const selectors = ["button[aria-controls='mobile-nav']", ".chip", "#project-track a[href]:not(:has(img))", "footer a[href='#top']"];
+    return [...document.querySelectorAll(selectors.join(","))].map((el) => {
+      const r = el.getBoundingClientRect();
+      return { label: el.textContent.trim(), width: Math.round(r.width), height: Math.round(r.height) };
+    });
+  });
+  if (width <= 430) check("essential mobile tap targets at least 44px high", tapTargets.every((t) => t.height >= 44));
+  for (const project of ["Glam & Ping", "Murabba", "Yusur"]) {
+    const fit = await page.locator(`img[alt="${project} project cover"]`).evaluate((img) => getComputedStyle(img).objectFit);
+    check(`preserve full artwork for ${project}`, fit === "contain");
+  }
   const projectTrack = page.locator("#project-track");
   const before = await projectTrack.evaluate(el => el.scrollLeft);
   await page.getByRole("button", { name: "Next project" }).click();
   await page.waitForTimeout(800);
   const after = await projectTrack.evaluate(el => el.scrollLeft);
   check("project carousel right arrow scrolls", after > before);
+  const counter = await page.locator("#projects [aria-live='polite']").textContent();
+  check("project counter follows arrow navigation", counter?.trim().startsWith("02"));
   await page.getByRole("button", { name: /Cybersecurity · 2/ }).click();
   check("certificate filter selects category", await page.locator("#cert-track article").count() === 2);
   check("certificate category aria-pressed", await page.getByRole("button", { name: /Cybersecurity · 2/ }).getAttribute("aria-pressed") === "true");
+  const certFilterButtons = page.locator('[aria-label="Filter certifications by category"] button');
+  check("7 certification filters", await certFilterButtons.count() === 7);
+  for (const label of ["Cloud & Infrastructure", "AI & Machine Learning", "Cybersecurity", "Databases & Development", "Professional Development", "Programs & Participation"]) {
+    const button = certFilterButtons.filter({ hasText: label });
+    const title = (await button.textContent()) || "";
+    const expected = Number(title.split("·").at(-1)?.trim());
+    await button.click();
+    check(`certificate filter ${label} matches count`, await page.locator("#cert-track article").count() === expected);
+    check(`certificate filter ${label} selected state`, await button.getAttribute("aria-pressed") === "true");
+  }
+  await certFilterButtons.first().click();
+  check("All certification filter resets", await page.locator("#cert-track article").count() === 31);
   if (width < 1280) {
-    await page.getByRole("button", { name: "Menu" }).click();
-    check("mobile navigation opens", await page.locator("#mobile-nav").isVisible());
-    await page.locator('#mobile-nav a[href="#highlights"]').click();
-    check("mobile navigation closes on selection", (await page.locator("#mobile-nav").count()) === 0);
+    const menu = page.locator("#mobile-nav");
+    check("closed dropdown remains mounted for exit animation", await menu.count() === 1);
+    const menuStyle = await menu.evaluate((element) => {
+      const css = getComputedStyle(element);
+      return {
+        transform: css.transform,
+        transformOrigin: css.transformOrigin,
+        gradient: css.backgroundImage,
+        blur: css.backdropFilter || css.webkitBackdropFilter || "",
+      };
+    });
+    check("menu has tinted glass gradient", menuStyle.gradient.includes("linear-gradient"));
+    check("menu has genuine frosted-glass blur", menuStyle.blur.includes("blur("));
+    if (name !== "reduced-motion") {
+      check("menu begins with a left-hinged 3D fold",
+        menuStyle.transform.startsWith("matrix3d(") && menuStyle.transformOrigin.startsWith("0px"));
+    }
+    check("closed menu is inert and hidden", await menu.getAttribute("aria-hidden") === "true" && !(await menu.isVisible()));
+    await page.getByRole("button", { name: "Open navigation menu" }).click();
+    await menu.waitFor({ state: "visible", timeout: 3000 });
+    check("mobile navigation opens", await menu.isVisible());
+    check("mobile menu contains all eight destinations", await menu.locator("a[href^='#']").count() === 8);
+    check("compact menu has no oversized marketing header", await menu.getByText("Find your way around.").count() === 0);
+    check("menu is a lightweight dropdown, not a full-screen panel", await menu.evaluate((el) =>
+      el.offsetWidth <= 460 && el.offsetHeight < innerHeight &&
+      el.offsetHeight <= Math.min(440, innerHeight - 96)
+    ));
+    check("menu opens without locking page scroll", await page.evaluate(() => document.body.style.overflow !== "hidden"));
+    check("menu opening animation is configured", await menu.evaluate((el) => getComputedStyle(el).transitionDuration.split(",").some((duration) => parseFloat(duration) > 0.1)) || name === "reduced-motion");
+    if (name !== "reduced-motion") {
+      const delays = await menu.locator("li").evaluateAll((list) =>
+        list.map((el) => parseFloat(getComputedStyle(el).transitionDelay))
+      );
+      check("menu links reveal sequentially", delays.length === 8 && delays[7] > delays[0]);
+    }
+    if (name === "mobile-390" || name === "short-mobile-320" || name === "landscape-mobile") {
+      await page.screenshot({ path: output + "/" + name + "-menu.png", animations: "disabled" });
+    }
+    // Tab behavior is verified on standard mobile viewports. Reduced-motion
+    // separately verifies visibility, Escape, selection and outside dismissal.
+    if (name !== "reduced-motion") {
+      await menu.locator("a[href]").first().focus();
+      await page.keyboard.press("Tab");
+      check("menu stays keyboard accessible", await page.evaluate(() => document.activeElement?.closest("#mobile-nav") !== null));
+    }
+    check("short viewport menu scrolls internally if needed", await menu.evaluate((el) => {
+      const style = getComputedStyle(el);
+      return el.scrollHeight <= el.clientHeight + 1 || style.overflowY === "auto";
+    }));
+    await page.keyboard.press("Escape");
+    check("close begins transition while menu stays mounted", await menu.count() === 1 && await menu.getAttribute("data-open") === "false");
+    await menu.waitFor({ state: "hidden", timeout: 3000 });
+    check("Escape closes navigation visually", !(await menu.isVisible()));
+    if (name !== "reduced-motion") {
+      check("exit animation returns menu to the left hinge", await menu.evaluate((el) =>
+        getComputedStyle(el).transform.startsWith("matrix3d(")
+      ));
+    }
+    check("Escape restores focus to Explore button", await page.getByRole("button", { name: "Open navigation menu" }).evaluate((el) => document.activeElement === el));
+    await page.getByRole("button", { name: "Open navigation menu" }).click();
+    await menu.waitFor({ state: "visible", timeout: 3000 });
+    await menu.locator('a[href="#highlights"]').click();
+    await menu.waitFor({ state: "hidden", timeout: 3000 });
+    check("section selection closes navigation with animation", await menu.getAttribute("data-open") === "false" && !(await menu.isVisible()));
+    await page.getByRole("button", { name: "Open navigation menu" }).click();
+    await menu.waitFor({ state: "visible", timeout: 3000 });
+    await page.mouse.click(5, Math.max(85, height - 20));
+    await menu.waitFor({ state: "hidden", timeout: 3000 });
+    check("outside tap closes navigation", !(await menu.isVisible()));
   }
   if (name === "reduced-motion") {
     check("reduced motion preference respected", await page.evaluate(() => matchMedia("(prefers-reduced-motion: reduce)").matches));
   }
   results.push({ name, width, height, basic, axe: ax, assertions, errors, failingResponses });
-  console.log(JSON.stringify({ name, viewport: width, overflowPx: basic.overflowPx, overflowingElements: basic.overflowingElements.slice(0, 8), cards: [basic.projectCards,basic.certificateCards], violations: ax, failedAssertions: assertions.filter(v => !v.passed), errors, failingResponses }));
+  console.log(JSON.stringify({ name, viewport: width, tapTargets, overflowPx: basic.overflowPx, overflowingElements: basic.overflowingElements.slice(0, 8), cards: [basic.projectCards,basic.certificateCards], violations: ax, failedAssertions: assertions.filter(v => !v.passed), errors, failingResponses }));
   await context.close();
 }
 try {
-  for (const [width,height,name] of [[320,740,"mobile-320"],[390,844,"mobile-390"],[768,1024,"tablet-768"],[1440,900,"desktop-1440"],[390,844,"reduced-motion"]]) {
+  for (const [width,height,name] of [[320,568,"short-mobile-320"],[320,740,"mobile-320"],[360,800,"mobile-360"],[375,667,"mobile-375"],[390,844,"mobile-390"],[430,932,"mobile-430"],[844,390,"landscape-mobile"],[768,1024,"tablet-768"],[1440,900,"desktop-1440"],[390,844,"reduced-motion"]]) {
     await inspect(width,height,name);
   }
 } finally {

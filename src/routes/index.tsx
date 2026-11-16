@@ -5,6 +5,7 @@ import { RoseIntro } from "@/components/portfolio/RoseIntro";
 const title = "Rose Alotaibi — Where technology meets creativity";
 const description = "Portfolio of Rose Alotaibi, IT student at King Saud University (Networks & IoT Engineering): projects, leadership, certifications and contact.";
 const socialImage = "https://rosealotaibi.vercel.app/og-preview.svg";
+
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
